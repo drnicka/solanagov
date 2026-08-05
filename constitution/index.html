@@ -315,15 +315,20 @@ svmgov -k /path/to/validator-identity.json \
 <script>
 (() => {
   // ---- config -------------------------------------------------------------
-  // Set once SGP-0001 is created on-chain. Until then the ledger shows empty
-  // slots. Override for testing with ?proposal=<pubkey>.
-  let PROPOSAL_ID = null;
+  // The proposal id and RPC list live in /data/config.json (single place to
+  // flip when SGP-0001 lands on-chain). /data/signers.json is the baked
+  // roster — refreshed by a GitHub Action every ~10 min with validator names
+  // resolved from on-chain validator-info — so visitors render instantly
+  // without touching an RPC. Live RPC polling tops it up between bakes.
+  // Override for testing with ?proposal=<pubkey>.
   const qp = new URLSearchParams(location.search).get("proposal");
-  if (qp && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(qp)) PROPOSAL_ID = qp;
+  const QP_ID = qp && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(qp) ? qp : null;
+  let PROPOSAL_ID = QP_ID;
+  let RPCS = ["https://api.mainnet-beta.solana.com"];
+  let nameByVote = {};
 
-  const RPC = "https://api.mainnet-beta.solana.com";
   const MIN_SLOTS = 44;          // empty ruled lines shown before signatures arrive
-  const THRESHOLD_BPS = 1500;    // 15% sponsor threshold
+  const PROPOSAL_DISC = [26, 94, 189, 187, 116, 136, 53, 33]; // sha256("account:Proposal")[0..8]
 
   // ---- tiny base58 --------------------------------------------------------
   const ALPHA = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -338,6 +343,7 @@ svmgov -k /path/to/validator-identity.json \
 
   // ---- borsh walk of the Proposal account ---------------------------------
   function parseProposal(buf) {
+    for (let i = 0; i < 8; i++) if (buf[i] !== PROPOSAL_DISC[i]) throw new Error("not a Proposal account");
     const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
     let o = 8 + 32;                                   // discriminator + author
     const tLen = dv.getUint32(o, true); o += 4 + tLen;
@@ -357,11 +363,19 @@ svmgov -k /path/to/validator-identity.json \
   }
 
   async function rpc(method, params) {
-    const r = await fetch(RPC, {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-    });
-    return (await r.json()).result;
+    let lastErr;
+    for (const url of RPCS) {
+      try {
+        const r = await fetch(url, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        });
+        const j = await r.json();
+        if (j.error) throw new Error(j.error.message || "rpc error");
+        return j.result;
+      } catch (e) { lastErr = e; }
+    }
+    throw lastErr;
   }
 
   // ---- render -------------------------------------------------------------
@@ -392,14 +406,51 @@ svmgov -k /path/to/validator-identity.json \
     noteEl.textContent = message;
   }
 
+  function renderLedger(filled, { phase, supportLamports, totalStake, live }) {
+    const slots = Math.max(MIN_SLOTS, filled.length + 6);
+    let html = "";
+    for (let i = 0; i < slots; i++) html += slotHTML(i + 1, filled[i] || null);
+    sigsEl.innerHTML = html;
+
+    const pctStr = totalStake ? (Number(supportLamports) / totalStake * 100).toFixed(1) : "—";
+    stSigs.textContent = String(filled.length);
+    stSupport.textContent = `${(Number(supportLamports) / 1e15).toFixed(1)}M SOL (${pctStr}%)`;
+    stPhase.textContent = phase === "finalized" ? "FINALIZED"
+      : phase === "sponsored" ? "SPONSORED — HEADING TO VOTE" : "GATHERING SPONSORSHIP";
+    if (live) statusEl.classList.add("live");
+    noteEl.textContent = phase === "gathering"
+      ? `Sponsorship stands at ${pctStr}% of active stake — the threshold is 15%.`
+      : "The sponsor threshold has been met. The Constitution proceeds to a vote of all staked SOL.";
+  }
+
+  // Baked roster from the repo (refreshed by GitHub Action; includes names).
+  async function loadBaseline() {
+    try {
+      const cfg = await (await fetch("/data/config.json", { cache: "no-store" })).json();
+      if (Array.isArray(cfg.rpcs) && cfg.rpcs.length) RPCS = cfg.rpcs;
+      if (!QP_ID && cfg.proposalId) PROPOSAL_ID = cfg.proposalId;
+    } catch (e) { /* not served from the site — artifact preview */ }
+    try {
+      const base = await (await fetch("/data/signers.json", { cache: "no-store" })).json();
+      if (base.signers) for (const s of base.signers) if (s.name) nameByVote[s.vote] = s.name;
+      if (base.signers?.length && (!QP_ID || QP_ID === base.proposalId)) {
+        renderLedger(
+          base.signers.map(s => ({ vote: s.vote, name: s.name, stakeSOL: s.stakeSol })),
+          { phase: base.phase, supportLamports: base.supportLamports,
+            totalStake: Number(base.totalStakeLamports || 0), live: false });
+      }
+    } catch (e) { /* no baked roster yet */ }
+  }
+
+  // Live top-up straight from the chain (catches signatures between bakes).
   async function refresh() {
-    if (!PROPOSAL_ID) { renderEmpty("The ledger awaits the proposal's creation on-chain."); return; }
+    if (!PROPOSAL_ID) return;
     try {
       const [acct, votes] = await Promise.all([
         rpc("getAccountInfo", [PROPOSAL_ID, { encoding: "base64" }]),
         rpc("getVoteAccounts", [{ commitment: "confirmed" }]),
       ]);
-      if (!acct || !acct.value) { renderEmpty("The ledger awaits the proposal's creation on-chain."); return; }
+      if (!acct || !acct.value) return;
 
       const raw = Uint8Array.from(atob(acct.value.data[0]), c => c.charCodeAt(0));
       const p = parseProposal(raw);
@@ -411,34 +462,19 @@ svmgov -k /path/to/validator-identity.json \
         totalStake += v.activatedStake;
       }
 
-      const filled = p.supporters.map(vote => ({
-        vote,
-        name: null, // upgrade path: validator-info lookup
-        stakeSOL: info[vote] ? info[vote].activatedStake / 1e9 : null,
-      }));
-
-      const slots = Math.max(MIN_SLOTS, filled.length + 6);
-      let html = "";
-      for (let i = 0; i < slots; i++) html += slotHTML(i + 1, filled[i] || null);
-      sigsEl.innerHTML = html;
-
-      const supportSOL = Number(p.supportLamports) / 1e9;
-      const pctStr = totalStake ? (Number(p.supportLamports) / totalStake * 100).toFixed(1) : "—";
-
-      stSigs.textContent = String(filled.length);
-      stSupport.textContent = `${(supportSOL / 1e6).toFixed(1)}M SOL (${pctStr}%)`;
-      stPhase.textContent = p.finalized ? "FINALIZED" : p.voting ? "SPONSORED — HEADING TO VOTE" : "GATHERING SPONSORSHIP";
-      statusEl.classList.add("live");
-      noteEl.textContent = p.voting
-        ? "The sponsor threshold has been met. The Constitution proceeds to a vote of all staked SOL."
-        : `Sponsorship stands at ${pctStr}% of active stake — the threshold is 15%.`;
-    } catch (e) {
-      // CSP-blocked (artifact preview) or RPC hiccup: show the ceremonial empty state.
-      renderEmpty("Live ledger unavailable in this preview — signatures appear when served from solanagov.com.");
-    }
+      renderLedger(
+        p.supporters.map(vote => ({
+          vote,
+          name: nameByVote[vote] || null,
+          stakeSOL: info[vote] ? info[vote].activatedStake / 1e9 : null,
+        })),
+        { phase: p.finalized ? "finalized" : p.voting ? "sponsored" : "gathering",
+          supportLamports: p.supportLamports, totalStake, live: true });
+    } catch (e) { /* keep whatever is rendered (baseline or empty state) */ }
   }
 
-  refresh();
+  renderEmpty("The ledger awaits the proposal's creation on-chain.");
+  loadBaseline().then(refresh);
   setInterval(refresh, 60_000);
 })();
 </script>

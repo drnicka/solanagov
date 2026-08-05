@@ -1,0 +1,25 @@
+name: Update signers ledger
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node scripts/update-signers.mjs
+      - name: Commit if changed
+        run: |
+          if ! git diff --quiet data/signers.json; then
+            git config user.name "signers-bot"
+            git config user.email "actions@github.com"
+            git add data/signers.json
+            git commit -m "chore: refresh signers ledger"
+            git push
+          fi
