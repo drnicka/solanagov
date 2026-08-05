@@ -15,9 +15,35 @@
     --rule: rgba(237, 234, 226, .16);
     --rule-strong: rgba(237, 234, 226, .34);
     --live: #3ADFB2;
+    --pre-bg: #0C0C0B;
+  }
+  /* Light mode: the printed document — black ink on paper. */
+  html.light {
+    --black: #F8F7F3;
+    --ink: #1F1D19;
+    --ink-strong: #000000;
+    --ink-dim: #6B675E;
+    --ink-faint: #9C978B;
+    --rule: rgba(31, 29, 25, .15);
+    --rule-strong: rgba(31, 29, 25, .38);
+    --live: #0B8F72;
+    --pre-bg: #EFEDE7;
   }
   * { box-sizing: border-box; }
-  html { background: var(--black); }
+  html { background: var(--black); transition: background .2s ease; }
+  @media (prefers-reduced-motion: reduce) { html { transition: none; } }
+
+  .theme-toggle {
+    position: fixed; top: 18px; right: 18px; z-index: 10;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--ink-dim); background: var(--black);
+    border: 1px solid var(--rule-strong); border-radius: 999px;
+    padding: 7px 14px; cursor: pointer;
+  }
+  .theme-toggle:hover { color: var(--ink-strong); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--ink-dim); outline-offset: 2px; }
+  @media print { .theme-toggle { display: none; } }
   body {
     background: var(--black); color: var(--ink); margin: 0;
     font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
@@ -164,7 +190,7 @@
     font-size: 17px; color: var(--ink-strong); text-align: center; margin: 0 0 22px;
   }
   .howto pre {
-    background: #0C0C0B; border: 1px solid var(--rule); border-radius: 6px;
+    background: var(--pre-bg); border: 1px solid var(--rule); border-radius: 6px;
     padding: 18px 20px; overflow-x: auto; font-size: 12.5px; line-height: 1.7;
     color: var(--ink); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
     margin: 0;
@@ -183,6 +209,8 @@
   footer.prov .links { margin-top: 18px; }
   footer.prov .links a { margin-right: 26px; color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 </style>
+
+<button class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">☼ Paper</button>
 
 <div class="doc">
 
@@ -314,6 +342,23 @@ svmgov -k /path/to/validator-identity.json \
 
 <script>
 (() => {
+  // ---- theme toggle: ledger (dark, default) / paper (light) ---------------
+  const rootEl = document.documentElement;
+  const toggle = document.getElementById("theme-toggle");
+  const applyTheme = light => {
+    rootEl.classList.toggle("light", light);
+    toggle.textContent = light ? "☾ Ledger" : "☼ Paper";
+    const meta = document.querySelector('meta[name="color-scheme"]');
+    if (meta) meta.setAttribute("content", light ? "light" : "dark");
+  };
+  let stored = null;
+  try { stored = localStorage.getItem("sg-theme"); } catch (e) {}
+  applyTheme(stored === "light");
+  toggle.addEventListener("click", () => {
+    const light = !rootEl.classList.contains("light");
+    applyTheme(light);
+    try { localStorage.setItem("sg-theme", light ? "light" : "dark"); } catch (e) {}
+  });
   // ---- config -------------------------------------------------------------
   // The proposal id and RPC list live in /data/config.json (single place to
   // flip when SGP-0001 lands on-chain). /data/signers.json is the baked
