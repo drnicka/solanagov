@@ -1,768 +1,481 @@
 <!doctype html>
 <html lang="en">
 <meta charset="utf-8">
-<title>JitoSOL × Solana Governance — How Your Vote Moves the Pool</title>
+<title>The Solana Constitution — Signing Ledger</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
 <style>
+  /* Ceremonial document — deliberately single-theme: white ink on black. */
   :root {
-    --bg: #F2F5F6;
-    --surface: #FFFFFF;
-    --surface-2: #E9EFF0;
-    --ink: #0E1B24;
-    --muted: #5A6B77;
-    --faint: #8296A1;
-    --line: rgba(14, 27, 36, .13);
-    --accent: #0B8F72;          /* UI accent (links, chips, emphasis) */
-    --mark: #0B8F72;            /* chart series — validated on white   */
-    --zone: #A96F1A;            /* sub-quorum zone — validated on white */
-    --zone-soft: rgba(169, 111, 26, .09);
-    --accent-soft: rgba(11, 143, 114, .09);
-    --card-shadow: 0 1px 2px rgba(14,27,36,.05), 0 8px 24px rgba(14,27,36,.05);
+    --black: #050505;
+    --ink: #EDEAE2;
+    --ink-strong: #FFFFFF;
+    --ink-dim: #9B978D;
+    --ink-faint: #5F5C55;
+    --rule: rgba(237, 234, 226, .16);
+    --rule-strong: rgba(237, 234, 226, .34);
+    --live: #3ADFB2;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #0B111A;
-      --surface: #111927;
-      --surface-2: #17212F;
-      --ink: #E9F0F4;
-      --muted: #93A3B0;
-      --faint: #64768399;
-      --line: rgba(233, 240, 244, .1);
-      --accent: #3ADFB2;
-      --mark: #0FA87C;          /* validated on #111927 */
-      --zone: #BA842B;          /* validated on #111927 */
-      --zone-soft: rgba(186, 132, 43, .12);
-      --accent-soft: rgba(58, 223, 178, .08);
-      --card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.25);
-    }
-  }
-  :root[data-theme="light"] {
-    --bg: #F2F5F6; --surface: #FFFFFF; --surface-2: #E9EFF0;
-    --ink: #0E1B24; --muted: #5A6B77; --faint: #8296A1;
-    --line: rgba(14,27,36,.13);
-    --accent: #0B8F72; --mark: #0B8F72; --zone: #A96F1A;
-    --zone-soft: rgba(169,111,26,.09); --accent-soft: rgba(11,143,114,.09);
-    --card-shadow: 0 1px 2px rgba(14,27,36,.05), 0 8px 24px rgba(14,27,36,.05);
-  }
-  :root[data-theme="dark"] {
-    --bg: #0B111A; --surface: #111927; --surface-2: #17212F;
-    --ink: #E9F0F4; --muted: #93A3B0; --faint: #64768399;
-    --line: rgba(233,240,244,.1);
-    --accent: #3ADFB2; --mark: #0FA87C; --zone: #BA842B;
-    --zone-soft: rgba(186,132,43,.12); --accent-soft: rgba(58,223,178,.08);
-    --card-shadow: 0 1px 2px rgba(0,0,0,.3), 0 12px 32px rgba(0,0,0,.25);
-  }
-
   * { box-sizing: border-box; }
+  html { background: var(--black); }
   body {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    line-height: 1.6;
-    margin: 0;
+    background: var(--black); color: var(--ink); margin: 0;
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+    line-height: 1.75; font-size: 17px;
     -webkit-font-smoothing: antialiased;
   }
-  .mono {
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .doc { max-width: 700px; margin: 0 auto; padding: 0 28px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { text-align: center; padding: 96px 0 48px; }
+  .masthead .over {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums;
+    font-size: 11px; letter-spacing: .34em; text-transform: uppercase;
+    color: var(--ink-dim); margin: 0 0 34px;
   }
-  a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
-  a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
-    outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px;
+  h1.title {
+    font-size: clamp(40px, 7vw, 64px); font-weight: 400; margin: 0;
+    letter-spacing: .02em; line-height: 1.12; color: var(--ink-strong);
+    font-variant: small-caps;
   }
+  .masthead .sub {
+    font-style: italic; color: var(--ink-dim); font-size: 18px; margin: 22px 0 0;
+  }
+  .orn { color: var(--ink-faint); font-size: 18px; letter-spacing: 1.2em; padding-left: 1.2em; margin: 40px 0 0; }
 
-  .wrap { max-width: 860px; margin: 0 auto; padding: 0 24px; }
-  .prose { max-width: 640px; }
-
-  /* ---------- hero ---------- */
-  header { padding: 72px 0 48px; }
-  .eyebrow {
+  /* ---------- live status strip ---------- */
+  .status {
+    margin: 44px auto 0; max-width: 620px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    padding: 14px 8px; display: flex; justify-content: center; gap: 34px; flex-wrap: wrap;
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--accent); margin: 0 0 20px;
+    font-size: 12px; color: var(--ink-dim); letter-spacing: .06em;
   }
-  h1 {
-    font-size: clamp(34px, 5.4vw, 54px);
-    line-height: 1.06; letter-spacing: -.025em; font-weight: 750;
-    margin: 0 0 20px; text-wrap: balance; max-width: 15ch;
+  .status b { color: var(--ink-strong); font-weight: 600; }
+  .status .livedot {
+    display: inline-block; width: 7px; height: 7px; border-radius: 50%;
+    background: var(--ink-faint); margin-right: 8px; vertical-align: 1px;
   }
-  .subhead {
-    font-size: 22px; font-weight: 650; letter-spacing: -.01em;
-    color: var(--accent); margin: 0 0 18px;
-  }
-  .lede { font-size: 19px; color: var(--muted); margin: 0; max-width: 56ch; text-wrap: pretty; }
-  .lede strong { color: var(--ink); font-weight: 600; }
+  .status.live .livedot { background: var(--live); box-shadow: 0 0 8px var(--live); }
 
-  .stat-row {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
-    margin-top: 44px;
+  /* ---------- document body ---------- */
+  .preamble { padding: 64px 0 8px; }
+  .preamble .word {
+    font-variant: small-caps; letter-spacing: .18em; font-size: 15px;
+    color: var(--ink-dim); text-align: center; display: block; margin-bottom: 26px;
   }
-  .stat {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    padding: 18px 20px 16px; box-shadow: var(--card-shadow);
+  .preamble p { font-size: 19px; line-height: 1.85; text-align: justify; hyphens: auto; margin: 0; }
+  .preamble p::first-letter {
+    font-size: 3.4em; float: left; line-height: .82; padding: 6px 10px 0 0;
+    color: var(--ink-strong);
   }
-  .stat .n {
+
+  article { padding: 44px 0 6px; }
+  .art-head { text-align: center; margin: 0 0 30px; }
+  .art-head .n {
+    font-variant: small-caps; letter-spacing: .3em; font-size: 14px; color: var(--ink-dim);
+    display: block; margin-bottom: 8px;
+  }
+  .art-head .t {
+    font-size: 26px; font-weight: 400; color: var(--ink-strong); margin: 0;
+    letter-spacing: .01em;
+  }
+  .art-head::after {
+    content: "✦"; display: block; color: var(--ink-faint); font-size: 11px; margin-top: 18px;
+  }
+  .clause { margin: 0 0 22px; }
+  .clause .cn {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums;
-    font-size: clamp(26px, 4vw, 36px); font-weight: 600; letter-spacing: -.02em;
-    color: var(--ink); line-height: 1.1;
+    font-size: 12px; color: var(--ink-faint); margin-right: 12px;
   }
-  .stat .n em { font-style: normal; color: var(--accent); }
-  .stat .l { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+  .clause p { display: inline; margin: 0; text-align: justify; }
+  .clause b, .clause strong { color: var(--ink-strong); font-weight: 600; }
+  .clause .sub { margin: 10px 0 0 34px; }
+  .clause .sub .cn { font-size: 11px; }
 
-  /* ---------- sections ---------- */
-  section { padding: 40px 0; }
-  h2 {
-    font-size: 26px; letter-spacing: -.015em; font-weight: 700;
-    margin: 0 0 8px; text-wrap: balance;
+  table.params {
+    width: 100%; border-collapse: collapse; margin: 8px 0 10px; font-size: 15.5px;
   }
-  .kicker {
+  table.params th {
+    font-variant: small-caps; letter-spacing: .12em; font-weight: 400; font-size: 13.5px;
+    color: var(--ink-dim); text-align: left; padding: 10px 12px 10px 0;
+    border-bottom: 1px solid var(--rule-strong);
+  }
+  table.params td {
+    padding: 10px 12px 10px 0; border-bottom: 1px solid var(--rule); color: var(--ink);
+  }
+  table.params td:last-child { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; }
+
+  /* ---------- signing section ---------- */
+  .witness { padding: 72px 0 20px; text-align: center; }
+  .witness .rule-orn { color: var(--ink-faint); letter-spacing: 1.4em; padding-left: 1.4em; margin-bottom: 44px; }
+  .witness h2 {
+    font-variant: small-caps; font-weight: 400; letter-spacing: .2em;
+    font-size: 24px; color: var(--ink-strong); margin: 0 0 26px;
+  }
+  .witness .decl {
+    font-style: italic; font-size: 18.5px; line-height: 1.9; color: var(--ink);
+    max-width: 560px; margin: 0 auto;
+  }
+  .witness .note {
+    font-size: 14px; color: var(--ink-dim); max-width: 520px; margin: 22px auto 0;
+  }
+
+  .ledger { padding: 40px 0 30px; }
+  .sigs {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 34px 56px;
+    padding: 12px 0;
+  }
+  @media (max-width: 620px) { .sigs { grid-template-columns: 1fr; } }
+  .sig { border-bottom: 1px solid var(--rule-strong); padding: 4px 2px 8px; min-height: 74px;
+         display: flex; align-items: flex-end; gap: 14px; position: relative; }
+  .sig .rank {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
-    color: var(--faint); margin: 0 0 10px;
+    font-size: 10.5px; color: var(--ink-faint); padding-bottom: 3px; min-width: 22px;
   }
-  h2 + p, .kicker + h2 + p { margin-top: 12px; }
-  p { margin: 0 0 16px; color: var(--muted); }
-  p strong, li strong { color: var(--ink); font-weight: 600; }
-  .rule { border: 0; border-top: 1px solid var(--line); margin: 16px 0 0; }
-
-  /* ---------- steps ---------- */
-  .steps { display: grid; gap: 12px; margin-top: 28px; }
-  .step {
-    display: grid; grid-template-columns: 52px 1fr; gap: 18px;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    padding: 20px 22px; box-shadow: var(--card-shadow);
+  .sig .body { flex: 1; min-width: 0; }
+  .sig .name {
+    font-family: "Snell Roundhand", "Savoye LET", "Apple Chancery", "Segoe Script", "Lucida Handwriting", cursive;
+    font-size: 25px; line-height: 1.15; color: var(--ink-strong);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .step .idx {
+  .sig .meta {
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 13px; color: var(--accent); padding-top: 3px;
+    font-size: 10.5px; color: var(--ink-dim); margin-top: 5px; letter-spacing: .04em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-  .step h3 { margin: 0 0 6px; font-size: 16.5px; font-weight: 650; }
-  .step p { margin: 0; font-size: 14.5px; }
-  .step .fine { font-size: 13px; color: var(--faint); margin-top: 8px; }
-
-  /* ---------- two-layer diagram ---------- */
-  .layers {
-    display: grid; grid-template-columns: 1fr auto 1fr; gap: 0; align-items: stretch;
-    margin-top: 28px;
-  }
-  .layer {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    padding: 20px 22px; box-shadow: var(--card-shadow);
-  }
-  .layer .tag {
+  .sig.empty .name { color: var(--ink-faint); font-size: 16px; font-style: italic;
+    font-family: "Iowan Old Style", Palatino, Georgia, serif; }
+  .sig .seal {
+    position: absolute; right: 0; bottom: 10px; font-size: 13px; color: var(--live);
     font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
-    color: var(--faint); margin-bottom: 8px;
-  }
-  .layer h3 { margin: 0 0 8px; font-size: 16px; font-weight: 650; }
-  .layer p { margin: 0; font-size: 14px; }
-  .gate {
-    align-self: center; display: flex; flex-direction: column; align-items: center;
-    gap: 6px; padding: 0 18px;
-  }
-  .gate .chip {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 12px; font-weight: 600; white-space: nowrap;
-    color: var(--accent); background: var(--accent-soft);
-    border: 1px solid var(--accent); border-radius: 999px; padding: 5px 12px;
-  }
-  .gate .arrow { color: var(--faint); font-size: 18px; line-height: 1; }
-  @media (max-width: 680px) {
-    .layers { grid-template-columns: 1fr; gap: 12px; }
-    .gate { flex-direction: row; padding: 4px 0; }
-    .gate .arrow { transform: rotate(90deg); }
-    .stat-row { grid-template-columns: 1fr; }
-    .step { grid-template-columns: 36px 1fr; gap: 12px; }
   }
 
-  code.inline {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: .88em; background: var(--surface-2);
-    border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px;
-    color: var(--ink); white-space: nowrap;
+  .ledger-note {
+    text-align: center; font-size: 13.5px; color: var(--ink-dim);
+    padding: 26px 0 0; font-style: italic;
   }
 
-  /* ---------- uplift lab ---------- */
-  .lab {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
-    box-shadow: var(--card-shadow); padding: 26px 26px 20px; margin-top: 28px;
+  /* ---------- how to sign ---------- */
+  .howto { padding: 56px 0 20px; }
+  .howto h3 {
+    font-variant: small-caps; font-weight: 400; letter-spacing: .16em;
+    font-size: 17px; color: var(--ink-strong); text-align: center; margin: 0 0 22px;
   }
-  .lab-controls {
-    display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end;
-    padding-bottom: 18px; border-bottom: 1px solid var(--line); margin-bottom: 6px;
+  .howto pre {
+    background: #0C0C0B; border: 1px solid var(--rule); border-radius: 6px;
+    padding: 18px 20px; overflow-x: auto; font-size: 12.5px; line-height: 1.7;
+    color: var(--ink); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    margin: 0;
   }
-  .ctl label {
-    display: block; font-size: 12px; letter-spacing: .06em; text-transform: uppercase;
-    color: var(--faint); margin-bottom: 8px; font-weight: 600;
-  }
-  .ctl-slider { flex: 1 1 260px; }
-  .ctl-slider .val {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600;
-  }
-  input[type="range"] {
-    width: 100%; accent-color: var(--accent); margin: 4px 0 2px; cursor: pointer;
-  }
-  .ctl-amount input[type="text"] {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums;
-    font-size: 15px; width: 132px; padding: 8px 10px;
-    background: var(--bg); color: var(--ink);
-    border: 1px solid var(--line); border-radius: 7px;
-  }
-  .readout { padding: 16px 2px 14px; min-height: 76px; }
-  .readout .big { font-size: 17px; color: var(--ink); margin: 0 0 4px; text-wrap: pretty; }
-  .readout .big .hl {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums; font-weight: 650; color: var(--accent);
-  }
-  .readout .sub { font-size: 13.5px; color: var(--faint); margin: 0; }
-  .readout.blocked .big .hl { color: var(--zone); }
+  .howto .fine { font-size: 13px; color: var(--ink-dim); text-align: center; margin-top: 14px; }
 
-  .chart-box { position: relative; margin-top: 4px; }
-  .chart-box svg { display: block; width: 100%; height: auto; }
-  .chart-title { font-size: 13.5px; font-weight: 600; color: var(--muted); margin: 10px 0 2px; }
-  .tooltip {
-    position: absolute; pointer-events: none; opacity: 0;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 7px;
-    box-shadow: var(--card-shadow); padding: 8px 11px; font-size: 12.5px;
-    color: var(--muted); transform: translate(-50%, -110%); white-space: nowrap;
-    transition: opacity .12s ease;
+  /* ---------- footer / provenance ---------- */
+  footer.prov {
+    margin-top: 72px; border-top: 1px solid var(--rule);
+    padding: 34px 0 90px; font-size: 12.5px; color: var(--ink-dim);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; line-height: 2;
   }
-  .tooltip .tt-n {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums; color: var(--ink); font-weight: 600;
-  }
-  @media (prefers-reduced-motion: reduce) { .tooltip { transition: none; } }
-
-  /* svg marks via tokens */
-  .grid-line { stroke: var(--line); stroke-width: 1; }
-  .axis-label { fill: var(--faint); font-size: 11px;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  .curve { stroke: var(--mark); stroke-width: 2; fill: none; stroke-linecap: round; }
-  .curve-area { fill: var(--mark); opacity: .07; }
-  .dot { fill: var(--mark); stroke: var(--surface); stroke-width: 2; }
-  .zone-rect { fill: var(--zone-soft); }
-  .zone-hatch line { stroke: var(--zone); stroke-width: 1; opacity: .35; }
-  .zone-edge { stroke: var(--zone); stroke-width: 1; stroke-dasharray: 3 3; }
-  .zone-note { fill: var(--zone); font-size: 11px; font-weight: 600;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  .crosshair { stroke: var(--faint); stroke-width: 1; stroke-dasharray: 2 3; opacity: 0; }
-  .parity-note { fill: var(--faint); font-size: 11px;
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-
-  details.table-view { margin-top: 14px; font-size: 13.5px; }
-  details.table-view summary { color: var(--faint); cursor: pointer; }
-  details.table-view table {
-    border-collapse: collapse; margin-top: 10px; width: 100%; max-width: 420px;
-  }
-  details.table-view th, details.table-view td {
-    text-align: right; padding: 5px 14px 5px 0; border-bottom: 1px solid var(--line);
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-variant-numeric: tabular-nums; color: var(--muted); font-weight: 400; font-size: 12.5px;
-  }
-  details.table-view th { color: var(--faint); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
-
-  /* ---------- upcoming votes ---------- */
-  ul.votes { list-style: none; padding: 0; margin: 20px 0 24px; display: grid; gap: 12px; }
-  ul.votes li {
-    display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start;
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    padding: 16px 20px; box-shadow: var(--card-shadow);
-    font-size: 14.5px; color: var(--muted);
-  }
-  ul.votes .vtag {
-    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 12px; font-weight: 600; color: var(--accent);
-    background: var(--accent-soft); border-radius: 5px; padding: 3px 0;
-    text-align: center; margin-top: 2px;
-  }
-
-  /* ---------- honesty / callouts ---------- */
-  .callout {
-    border: 1px solid var(--line); border-left: 3px solid var(--zone);
-    background: var(--surface); border-radius: 8px; padding: 16px 20px; margin-top: 24px;
-  }
-  .callout p { margin: 0; font-size: 14.5px; }
-  .callout .t { font-weight: 650; color: var(--ink); display: block; margin-bottom: 4px; font-size: 14px; }
-
-  /* ---------- tiers ---------- */
-  .tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 28px; }
-  @media (max-width: 680px) { .tiers { grid-template-columns: 1fr; } }
-  .tier {
-    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
-    padding: 20px 22px; box-shadow: var(--card-shadow);
-  }
-  .tier .tag {
-    display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-    font-size: 11px; letter-spacing: .1em; text-transform: uppercase; font-weight: 600;
-    color: var(--accent); background: var(--accent-soft); border-radius: 5px;
-    padding: 3px 8px; margin-bottom: 12px;
-  }
-  .tier h3 { margin: 0 0 8px; font-size: 16px; font-weight: 650; }
-  .tier p { margin: 0; font-size: 14px; }
-  .tier .fine { margin-top: 10px; font-size: 12.5px; color: var(--faint); }
-
-  /* ---------- verification list ---------- */
-  ul.verify { list-style: none; padding: 0; margin: 24px 0 0; display: grid; gap: 10px; }
-  ul.verify li {
-    position: relative; padding-left: 26px;
-    font-size: 14.5px; color: var(--muted);
-  }
-  ul.verify li::before {
-    content: "▸"; color: var(--accent); font-size: 13px;
-    position: absolute; left: 4px; top: 1px;
-  }
-
-  /* ---------- FAQ ---------- */
-  .faq { display: grid; gap: 0; margin-top: 20px; border-top: 1px solid var(--line); }
-  .faq details { border-bottom: 1px solid var(--line); }
-  .faq summary {
-    cursor: pointer; padding: 16px 4px; font-weight: 600; font-size: 15.5px;
-    color: var(--ink); list-style: none; display: flex; justify-content: space-between; gap: 16px;
-  }
-  .faq summary::-webkit-details-marker { display: none; }
-  .faq summary::after { content: "+"; color: var(--faint); font-weight: 400; }
-  .faq details[open] summary::after { content: "–"; }
-  .faq details p { padding: 0 4px 18px; margin: 0; font-size: 14.5px; max-width: 62ch; }
-
-  /* ---------- print (flattened asset): chart only, no controls ---------- */
-  .print-only { display: none; }
-  .static-caption { font-size: 13.5px; color: var(--muted); margin: 12px 2px 0; }
-  @media print {
-    .lab-controls, .readout, details.table-view, .tooltip { display: none !important; }
-    .print-only { display: block; }
-  }
-
-  footer {
-    margin-top: 48px; padding: 32px 0 56px; border-top: 1px solid var(--line);
-    font-size: 13.5px; color: var(--faint);
-  }
-  footer p { color: var(--faint); font-size: 13px; margin: 0 0 8px; }
-  footer .links { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-bottom: 18px; }
+  footer.prov .row { display: flex; gap: 14px; flex-wrap: wrap; }
+  footer.prov .k { color: var(--ink-faint); min-width: 90px; }
+  footer.prov a { color: var(--ink-dim); }
+  footer.prov .links { margin-top: 18px; }
+  footer.prov .links a { margin-right: 26px; color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
 </style>
 
-<div class="wrap">
+<div class="doc">
 
-  <header>
-    <p class="eyebrow">JIP-30</p>
-    <h1>JitoSOL in Solana Governance</h1>
-    <p class="subhead">Vote once. Move the entire pool.</p>
-    <p class="lede">Solana is activating network-level governance, and JIP-30 aims to ensure that JitoSOL has
-    better than governance parity to staked SOL. As per the JIP-30 directive, a voting solution for JitoSOL
-    has been constructed. If turnout is greater than <strong>10% of JitoSOL TVL</strong>, the Jito stake pool
-    votes with <strong>its entire stake</strong> on-chain, split to mirror the ballots actually cast.
-    Voters direct the whole pool's weight.</p>
-
-    <div class="stat-row">
-      <div class="stat"><div class="n">up to <em>10×</em></div><div class="l">governance weight per voting JitoSOL at threshold turnout — you're never below 1×</div></div>
-      <div class="stat"><div class="n">10%</div><div class="l">of JitoSOL TVL must vote to trigger the pool's binding on-chain vote</div></div>
-      <div class="stat"><div class="n">0</div><div class="l">minimum balance, lockup, or fee — your JitoSOL never leaves your wallet</div></div>
+  <div class="masthead">
+    <p class="over">SGP-0001 · Ratification</p>
+    <h1 class="title">The Solana<br>Constitution</h1>
+    <p class="sub">A source of truth for network-level governance, written by its stakeholders.</p>
+    <div class="orn">✦ ✦ ✦</div>
+    <div class="status" id="status">
+      <span><span class="livedot"></span><span id="st-phase">AWAITING ON-CHAIN CREATION</span></span>
+      <span>SIGNATURES <b id="st-sigs">—</b></span>
+      <span>SUPPORT <b id="st-support">—</b></span>
     </div>
-  </header>
+  </div>
 
-  <section>
-    <p class="kicker">Why this exists</p>
-    <h2>Staked SOL is getting a vote. JitoSOL is too. Important votes are coming.</h2>
-    <div class="prose">
-      <p>The following proposals are anticipated to go to a network-wide vote soon:</p>
-    </div>
-    <ul class="votes">
-      <li><span class="vtag">SGP-1</span><div><strong>The Solana Constitution.</strong> The first Solana
-      Governance Proposal ratifies the Solana Constitution and activates on-chain, stake-weighted voting for
-      the network's biggest decisions via the <code class="inline">svmgov</code> program. Every staked SOL
-      carries proportional voting power, and stakers can even override their validator's vote.</div></li>
-      <li><span class="vtag">SGP-2</span><div><strong>Double Disinflation.</strong> A proposal to double the
-      disinflation rate, which will accelerate the network's transition to tail inflation.</div></li>
-      <li><span class="vtag">SGP-X</span><div><strong>MCP.</strong> A major network upgrade which will switch
-      the network to multiple concurrent proposers. This SGP will authorise a sequence of SIMDs that deliver
-      MCP through a series of incremental upgrades.</div></li>
-    </ul>
-    <div class="prose">
-      <p>The voting system is permissionless — validators can propose to elevate any SIMD to a network-wide vote.</p>
-      <p>But JitoSOL holders' stake lives inside the pool. Without a mechanism of its own, one of the largest
-      stake positions on Solana — over <strong>10 million SOL</strong> at the time of writing — would have no
-      way to express its holders' views. <strong>JIP-30 builds that mechanism</strong> with equivalent rights
-      to native SOL stakers, and a structural advantage native stakers don't get.</p>
-    </div>
-  </section>
+  <div class="preamble">
+    <span class="word">Preamble</span>
+    <p>The Solana Constitution outlines the principles and operational guidelines for network-level
+    Solana governance. It was written collaboratively by a broad range of network stakeholders and acts
+    as a network source of truth for governance that will facilitate coordination of network upgrades
+    amongst stakers, validators, and developers. This Constitution decentralizes power, enforces staker
+    sovereignty, and empowers validators to be active stewards of the network.</p>
+  </div>
 
-  <section>
-    <p class="kicker">The mechanism</p>
-    <h2>Two layers: you signal, the pool executes.</h2>
+  <article>
+    <div class="art-head"><span class="n">Article I</span><p class="t">Core Principles</p></div>
+    <div class="clause"><span class="cn">I.1</span><p><b>Stake Sovereignty.</b> Every staked SOL token carries proportional voting power.</p></div>
+    <div class="clause"><span class="cn">I.2</span><p><b>Validator Stewardship.</b> Validators translate stakeholder will into action, run the network securely and transparently, and are collectively accountable to stakers through governance participation and open performance data.</p></div>
+    <div class="clause"><span class="cn">I.3</span><p><b>Network Level Control.</b> Developers write proposals, validators endorse them, and all stakers have the ability to vote on them. Validators and stakers hold developers accountable and steward the network to optimal outcomes, thus mitigating the threat of a network fork.</p></div>
+    <div class="clause"><span class="cn">I.4</span><p><b>Transparency &amp; Auditability.</b> Every vote and vote override is recorded on-chain and publicly visible.</p></div>
+    <div class="clause"><span class="cn">I.5</span><p><b>Optimistic, Agile, and Consent-Driven.</b> The governance system is tuned to maximize holder consent, while balancing rapid development and iterative improvements, and limiting spam proposals and excessive voting.</p></div>
+    <div class="clause"><span class="cn">I.6</span><p><b>Decentralization, Positive-Sum Economics and Neutrality.</b> Permissionless validation and governance are foundational to the network. Censorship-resistance, positive-sum economics, and neutrality are paramount.</p></div>
+  </article>
 
-    <div class="layers">
-      <div class="layer">
-        <div class="tag">Layer 1 · Holder poll</div>
-        <h3>JitoSOL holders vote on Realms</h3>
-        <p>Yes, No, or Abstain — weighted 1:1 by your snapshotted JitoSOL balance.
-        This produces the holder-weighted outcome.</p>
-      </div>
-      <div class="gate">
-        <div class="chip">≥ 10% turnout</div>
-        <div class="arrow">→</div>
-      </div>
-      <div class="layer">
-        <div class="tag">Layer 2 · Binding vote</div>
-        <h3>The pool votes on-chain</h3>
-        <p>The stake pool manager casts the pool's <strong>full stake</strong> on
-        <code class="inline">svmgov</code>, split in basis points to mirror the poll.</p>
-      </div>
-    </div>
+  <article>
+    <div class="art-head"><span class="n">Article II</span><p class="t">Proposal Submission &amp; Support</p></div>
+    <div class="clause"><span class="cn">II.1</span><p>Solana Governance follows two tracks: a <b>Solana Improvement Document (SIMD)</b> — a technical specification document following the implementation pathway of SIMD-001, not voted upon — and a <b>Solana Governance Proposal (SGP)</b> — a more expansive proposal establishing consensus for a development or strategic network trajectory. All SGPs are voted on at the network level.</p></div>
+    <div class="clause"><span class="cn">II.2</span><p><b>Systemic Changes Should Trigger SGPs.</b> To eliminate overvoting and to maintain core developer agency and agility, SGPs should be limited to systemic network changes only, meaning a fundamental change to network economics or system architecture.</p></div>
+    <div class="clause"><span class="cn">II.3</span><p><b>Draft SGP to SGP Conversion.</b> A Draft SGP is created and iterated in the SGP repository; authors signal Final Draft status; a validator holding at least <b>100,000 SOL</b> of active stake creates the on-chain proposal. Once the draft exceeds the Proposal Sponsor Threshold, it becomes an official SGP and the Review Period is triggered.</p></div>
+    <div class="clause"><span class="cn">II.4</span><p><b>SIMD to SGP Elevation.</b> All SIMDs pass optimistically, ensuring rapid development paths, unless sufficient stake signals that a SIMD is systemic or contentious — in which case elevation to a network-wide vote is triggered by the Proposal Sponsor Threshold. If quorum is not met, the SIMD continues to pass optimistically.</p></div>
+    <div class="clause"><span class="cn">II.5</span><p><b>Drafting and Numbering.</b> SIMDs and SGPs are numbered and sequenced by the maintainers of the SIMD repository, who inherit the practices of SIMD-001 and publish reasoned justifications for exclusions.</p></div>
+    <div class="clause"><span class="cn">II.6</span><p><b>Format.</b> All SGPs follow the structure of the Solana Governance Proposal Template (Appendix I).</p></div>
+    <div class="clause"><span class="cn">II.7</span><p><b>Official Discussion Channels.</b> The canonical sites of deliberation are the proposals' GitHub repositories; community discussion elsewhere is welcomed as advisory input.</p></div>
+  </article>
 
-    <div class="steps">
-      <div class="step"><div class="idx">01</div><div>
-        <h3>Snapshot</h3>
-        <p>Your JitoSOL balance is recorded at a <strong>past, unannounced slot</strong> — so voting weight
-        can't be gamed by last-minute buys. The exact slot and a hash of the full snapshot are published
-        immediately after, so anyone can verify their weight.</p>
-      </div></div>
-      <div class="step"><div class="idx">02</div><div>
-        <h3>Receive your voting weight</h3>
-        <p>Voting weight arrives as a governance token: <strong>1 JitoSOL = 1 vote unit</strong>, exact to the lamport.
-        Larger holders get it delivered automatically; long-tail holders claim it in one click.</p>
-        <p class="fine">See "Who gets pushed, who claims" below.</p>
-      </div></div>
-      <div class="step"><div class="idx">03</div><div>
-        <h3>Vote on Realms</h3>
-        <p>Deposit your governance token and vote <strong>Yes, No, or Abstain</strong> during the voting window.
-        The live tally is public. The poll closes with enough buffer to relay the result before the
-        on-chain deadline.</p>
-      </div></div>
-      <div class="step"><div class="idx">04</div><div>
-        <h3>The pool casts the binding vote</h3>
-        <p>If turnout reached 10% of TVL, the manager splits the pool's entire stake proportionally to the poll.
-        A 63% Yes / 35% No / 2% Abstain result becomes
-        <code class="inline">cast_vote(6300, 3500, 200)</code> — not winner-take-all, a mirror.</p>
-      </div></div>
-    </div>
-  </section>
+  <article>
+    <div class="art-head"><span class="n">Article III</span><p class="t">Roles &amp; Responsibilities</p></div>
+    <div class="clause"><span class="cn">III.1</span><p><b>Staker.</b> Each stake account may cast a vote For, Against, or Abstain on every SGP. By default a staker's vote is delegated to their validator; stakers retain <b>vote sovereignty</b> and may vote before, after, or in the absence of validator turnout, overriding their validator.</p></div>
+    <div class="clause"><span class="cn">III.2</span><p><b>Validator.</b> A group of validators with at least <b>15%</b> of staked SOL may elevate an SGP to a network-wide vote. Validators cast their full or split stake in the final vote.</p></div>
+    <div class="clause"><span class="cn">III.3</span><p><b>Maintainers.</b> The procedural and operational stewards of the framework: editorial control of proposals, maintenance of the governance process, and publication of the formal record — with justifications for classification decisions stated for the network record.</p></div>
+  </article>
 
-  <section>
-    <p class="kicker">The governance uplift</p>
-    <h2>Show up, and your vote counts for more.</h2>
-    <div class="prose">
-      <p>The pool votes <strong>100% of its stake</strong>, but splits it to mirror only the ballots cast.
-      So each voting JitoSOL carries the weight of itself <em>plus its share of every non-voter's stake</em>.
-      Your effective multiplier is simply <strong>1 ÷ turnout</strong>: at the 10% threshold that's 10×;
-      at full turnout it's exactly the 1× a native staker gets. Participation is never penalized —
-      only amplified.</p>
-    </div>
+  <article>
+    <div class="art-head"><span class="n">Article IV</span><p class="t">Validator Voting Process</p></div>
+    <div class="clause"><span class="cn">IV.1</span><p><b>Review Period.</b> A review period of <b>7 epochs</b> follows on-chain proposal creation. The proposal's GitHub commit SHA is immutable from the moment of creation; the review period exists to study the frozen text, not to amend it.</p></div>
+    <div class="clause"><span class="cn">IV.2</span><p><b>NCN Snapshot Period.</b> A snapshot period of <b>1 epoch</b> follows the Review Period, during which the Node Consensus Network establishes the canonical stake snapshot fixing voting weights for the duration of the vote.</p></div>
+    <div class="clause"><span class="cn">IV.3</span><p><b>Vote Quorum.</b> Each vote requires a quorum of one-third of network stake to be considered a valid signal. Participating stake is the sum of For, Against, and Abstain allocations.</p></div>
+    <div class="clause"><span class="cn">IV.4</span><p><b>Supermajority Threshold.</b> A supermajority of two-thirds yes votes among the participating quorum is required to pass. Abstain counts as participation but not as a For vote.</p></div>
+    <div class="clause"><span class="cn">IV.5</span><p><b>Voting Period.</b> A voting period of <b>3 epochs</b> occurs for each SGP.</p></div>
+    <div class="clause"><span class="cn">IV.6</span><p><b>Voting Options.</b> Validators may Block Vote — 100% of stake on one option — or Split Vote, allocating stake across options in basis points summing to 10,000.</p></div>
+    <div class="clause"><span class="cn">IV.7</span><p><b>Quorum Failure.</b> Quorum failure signals network indifference rather than proposal failure. This governance process is a veto process: an SGP passing indicates the network will not veto a change. Inconclusive proposals leave development free to continue at its own risk.</p></div>
+    <div class="clause"><span class="cn">IV.8</span><p><b>Lifecycle States.</b> Draft → Final Draft → Support → Voting → Accepted | Rejected → Implemented → Activated; with the side states Withdrawn, Expired, and Inconclusive.</p></div>
+  </article>
 
-    <div class="lab">
-      <div class="lab-controls">
-        <div class="ctl ctl-slider">
-          <label for="turnout">Turnout — share of JitoSOL TVL that votes: <span class="val" id="turnout-val">12%</span></label>
-          <input type="range" id="turnout" min="2" max="100" step="1" value="12"
-                 aria-describedby="readout-big">
-        </div>
-        <div class="ctl ctl-amount">
-          <label for="amount">Your JitoSOL</label>
-          <input type="text" id="amount" inputmode="numeric" value="1,000" aria-describedby="readout-big">
-        </div>
-      </div>
-      <div class="readout" id="readout">
-        <p class="big" id="readout-big"></p>
-        <p class="sub" id="readout-sub"></p>
-      </div>
-      <p class="chart-title">Effective governance weight per voting JitoSOL, by turnout</p>
-      <div class="chart-box" id="chart-box">
-        <svg id="chart" viewBox="0 0 760 300" role="img"
-             aria-label="Line chart: voting-weight multiplier falls from 10 times at 10 percent turnout to 1 times at 100 percent turnout. Below 10 percent turnout the pool casts no vote."></svg>
-        <div class="tooltip" id="tooltip"></div>
-      </div>
-      <p class="static-caption print-only">Example: at 12% turnout (marked point), 1,000 JitoSOL votes with
-      the weight of 8,333 staked SOL — an 8.3× uplift. In the hatched zone below the 10% trigger, the poll
-      is advisory only and the pool casts no vote.</p>
-      <details class="table-view">
-        <summary>View as table</summary>
-        <table>
-          <thead><tr><th>Turnout</th><th>Multiplier</th><th>1,000 JitoSOL directs</th></tr></thead>
-          <tbody id="table-body"></tbody>
-        </table>
-      </details>
-    </div>
+  <article>
+    <div class="art-head"><span class="n">Article V</span><p class="t">Amendment Process</p></div>
+    <div class="clause"><span class="cn">V.1</span><p><b>Network Sovereignty.</b> The Solana Constitution is a living document, and the network, and the network alone, has full sovereignty over its articles and their application.</p></div>
+    <div class="clause"><span class="cn">V.2</span><p><b>SGP Directed.</b> Changes to articles and Key Governance Parameters are governed by the SGP process articulated in this Constitution.</p></div>
+    <div class="clause"><span class="cn">V.3</span><p><b>The Amendment Process.</b> Minor amendments — language and articulation — may be batched as a single SGP. Major amendments — Key Governance Parameters, or addition or deletion of entire articles — must be standalone SGPs.</p></div>
+    <div class="clause"><span class="cn">V.4</span><p><b>Justification.</b> All amendment SGPs must arrive with clear justification and empirical evidence for the change.</p></div>
+  </article>
 
-    <div class="callout">
-      <p><span class="t">The caveat</span>
-      Below 10% turnout the poll publishes as an <strong>advisory signal only</strong>. The pool casts no
-      on-chain vote, and JitoSOL's stake sits out that proposal. And if you don't vote while others do,
-      their ballots direct the stake backing your JitoSOL. The same proxy logic as shareholder voting.
-      The uplift rewards whoever shows up.</p>
-    </div>
-  </section>
+  <article>
+    <div class="art-head"><span class="n">Article VI</span><p class="t">Key Governance Parameters</p></div>
+    <table class="params">
+      <thead><tr><th>Parameter</th><th>Default</th></tr></thead>
+      <tbody>
+        <tr><td>Proposal Sponsor Threshold</td><td>15% of active stake</td></tr>
+        <tr><td>Proposal Submission Floor</td><td>100,000 SOL active stake</td></tr>
+        <tr><td>Quorum</td><td>⅓ of network stake</td></tr>
+        <tr><td>Supermajority Threshold</td><td>⅔ of participating stake</td></tr>
+        <tr><td>Review Period</td><td>7 epochs</td></tr>
+        <tr><td>NCN Snapshot Period</td><td>1 epoch</td></tr>
+        <tr><td>Voting Period</td><td>3 epochs</td></tr>
+      </tbody>
+    </table>
+  </article>
 
-  <section>
-    <p class="kicker">Distribution</p>
-    <h2>How to Claim Your Voting Tokens.</h2>
-    <div class="prose">
-      <p>There are two claim mechanisms.</p>
-    </div>
-    <div class="tiers">
-      <div class="tier">
-        <span class="tag">Pushed · largest accounts</span>
-        <h3>Delivered automatically</h3>
-        <p>If you are among the largest JitoSOL accounts — roughly the top 900 wallets, which together hold
-        about 90% of TVL (around 600+ JitoSOL at the snapshot) — your voting tokens will be delivered to
-        your holding address automatically. All you need to do is deposit your voting tokens to Realms
-        and vote.</p>
-      </div>
-      <div class="tier">
-        <span class="tag">Claim · everyone else</span>
-        <h3>One-click merkle claim</h3>
-        <p>Everybody else will claim via a one-click merkle claim, which withdraws the voting tokens to your
-        holding address. Then you vote — claim any time before the voting window ends and deposit your voting
-        tokens to Realms.</p>
-      </div>
-    </div>
-  </section>
+  <div class="witness">
+    <div class="rule-orn">✦ ✦ ✦</div>
+    <h2>In Witness Whereof</h2>
+    <p class="decl">We, the validators of the Solana network, by our signatures affixed on-chain,
+    do sponsor this Constitution to a vote of all staked SOL — and in voting, ratify it —
+    that the network may govern itself by no authority other than its own stake.</p>
+    <p class="note">The first signatures belong to the validators who sponsor the proposal on-chain.
+    Every signature below is a live on-chain act — a <span class="mono">support_proposal</span> or
+    <span class="mono">cast_vote</span> transaction — recorded here in the order it lands, permanently
+    verifiable on the ledger.</p>
+  </div>
 
-  <section>
-    <p class="kicker">Trust &amp; verification</p>
-    <h2>End to End Verifiable.</h2>
-    <div class="prose">
-      <p>In v1 the bridge from poll to on-chain vote is operational, not cryptographic: the stake pool
-      manager relays the result. Every input and output is published so the relay is fully auditable:</p>
-    </div>
-    <ul class="verify">
-      <li>The <strong>snapshot slot and sha256 hash</strong> of the full balance set — verify your own weight was counted.</li>
-      <li>The <strong>live Realms tally</strong> — the poll runs on public, on-chain infrastructure.</li>
-      <li>The <strong>tally file and its hash</strong>, plus the exact basis-point math from poll result to <code class="inline">cast_vote</code>.</li>
-      <li>The <strong>on-chain vote transaction</strong> from the pool manager — anyone can check it mirrors the poll.</li>
-      <li>Timing is guaranteed by construction: claim deadline ≤ poll close ≤ the <code class="inline">svmgov</code> voting deadline.</li>
-    </ul>
-  </section>
+  <div class="ledger">
+    <div class="sigs" id="sigs"></div>
+    <p class="ledger-note" id="ledger-note">The ledger awaits the proposal's creation on-chain.</p>
+  </div>
 
-  <section>
-    <p class="kicker">Delegation</p>
-    <h2>Delegate your vote to a hot wallet.</h2>
-    <div class="prose">
-      <p>Some users may not want to use their cold wallet or custodian account to vote. To accommodate these
-      users, and upon request, the target of your voting tokens can be a delegated address. You will need to
-      send some lamports of SOL to your delegated address to verify your ownership.</p>
-    </div>
-  </section>
+  <div class="howto">
+    <h3>To Sign — Validators</h3>
+    <pre># Sponsor the Constitution to a network vote (sign with your validator identity keypair)
+svmgov -k /path/to/validator-identity.json \
+  --rpc-url https://api.mainnet-beta.solana.com \
+  support-proposal --proposal-id &lt;SGP-0001_PROPOSAL_ID&gt;</pre>
+    <p class="fine">Your validator's signature is appended to this page automatically, in the order it lands on-chain.
+    Supporting is sponsorship — it says "this deserves a vote," not "yes."</p>
+  </div>
 
-  <section>
-    <p class="kicker">FAQ</p>
-    <h2>Common questions</h2>
-    <div class="faq">
-      <details>
-        <summary>What's the first vote about?</summary>
-        <p>SGP-1: ratifying the Solana Constitution — the document that formally activates network-level
-        governance (quorum of ⅓ of network stake, ⅔ supermajority to pass, 3-epoch voting window).
-        It's the founding vote of the whole system, which is exactly why JitoSOL holders should be in it.</p>
-      </details>
-      <details>
-        <summary>When does voting start?</summary>
-        <p>There's no scheduled date yet. SGP-1 goes to a network-wide vote once validators coordinate to
-        elevate it on-chain; the JitoSOL poll window will be announced as soon as that happens.</p>
-      </details>
-      <details>
-        <summary>Do I need to lock, stake, or move my JitoSOL?</summary>
-        <p>No. Your JitoSOL never leaves your wallet and keeps earning as usual. Voting weight is a separate
-        governance token derived from a snapshot of your balance. There's no minimum and no lockup.</p>
-      </details>
-      <details>
-        <summary>What if my JitoSOL is in a DeFi protocol at the snapshot?</summary>
-        <p>JitoSOL held in program-owned accounts (lending markets, LP positions) is excluded in v1 —
-        attributing wrapped balances to end users reliably is an open engineering problem that JIP-30
-        flags for future iterations. If governance participation matters to you, hold in your own wallet
-        across snapshot windows.</p>
-      </details>
-      <details>
-        <summary>What happens if turnout misses 10%?</summary>
-        <p>The poll result is published as an advisory signal, but the pool casts no binding on-chain vote
-        for that proposal. The threshold exists so a tiny, unrepresentative sample can't direct the full
-        pool's stake.</p>
-      </details>
-      <details>
-        <summary>What does Abstain do?</summary>
-        <p>Abstain counts toward turnout here and toward quorum at the Solana level, without counting as a
-        Yes. It's how you say "I participate, but I don't take a side" — useful, because Solana-level
-        quorum failure means the network reads the result as indifference.</p>
-      </details>
-      <details>
-        <summary>Who actually casts the on-chain vote, and can they deviate?</summary>
-        <p>The Jito stake pool manager — the only entity <code class="inline">svmgov</code> authorizes to
-        vote the pool's stake. In v1 this is a trusted-operator model, but every step is published
-        (snapshot hash, tally, transaction), so any deviation between the poll and the cast vote would be
-        immediately and publicly visible.</p>
-      </details>
-      <details>
-        <summary>Where's the full proposal?</summary>
-        <p>JIP-30 on the <a href="https://forum.jito.network/t/jip-30-ensure-jitosol-participation-in-solana-level-governance/906">Jito governance forum</a>,
-        with the Solana-side machinery in the
-        <a href="https://github.com/solana-foundation/solana-governance">solana-governance</a> repository.</p>
-      </details>
-    </div>
-  </section>
-
-  <footer>
+  <footer class="prov">
+    <div class="row"><span class="k">document</span><span>proposals/sgp-0001-solana-constitution.md</span></div>
+    <div class="row"><span class="k">commit</span><span>6f80d91b7c86a30b6ef54bbdbb37e570477b26ce</span></div>
+    <div class="row"><span class="k">sha-256</span><span>f205a8202c6ff9147d513c0b970b9f9e900c57f69d98eb1ac783c11b8ced112a</span></div>
+    <div class="row"><span class="k">program</span><span>govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU</span></div>
     <div class="links">
-      <a href="/constitution/">The Constitution — sign it on-chain</a>
-      <a href="/timeline/">Vote timeline — epoch by epoch</a>
-      <a href="https://forum.jito.network/t/jip-30-ensure-jitosol-participation-in-solana-level-governance/906">JIP-30 · Jito Forum</a>
-      <a href="https://github.com/solana-foundation/solana-governance">solana-governance · GitHub</a>
+      <a href="https://github.com/solana-foundation/solana-governance-proposals/blob/6f80d91b7c86a30b6ef54bbdbb37e570477b26ce/proposals/sgp-0001-solana-constitution.md">Read the pinned text</a>
+      <a href="/timeline/">Vote timeline</a>
+      <a href="/jitosol/">JitoSOL in governance</a>
     </div>
-    <p>Draft explainer for JIP-30 review. Holder counts and cost figures are from the JitoSOL governance
-    design docs (June 2026); mechanism parameters are subject to the governance subDAO's final engineering
-    decisions, and it is anticipated that the governance mechanism will evolve and improve over time.
-    The uplift multiplier assumes the pool casts its full stake, mirrored proportionally to the poll.</p>
   </footer>
 
 </div>
 
 <script>
 (() => {
-  const QUORUM = 10;                       // % of TVL
-  const svgNS = "http://www.w3.org/2000/svg";
-  const svg = document.getElementById("chart");
-  const box = document.getElementById("chart-box");
-  const tooltip = document.getElementById("tooltip");
+  // ---- config -------------------------------------------------------------
+  // The proposal id and RPC list live in /data/config.json (single place to
+  // flip when SGP-0001 lands on-chain). /data/signers.json is the baked
+  // roster — refreshed by a GitHub Action every ~10 min with validator names
+  // resolved from on-chain validator-info — so visitors render instantly
+  // without touching an RPC. Live RPC polling tops it up between bakes.
+  // Override for testing with ?proposal=<pubkey>.
+  const qp = new URLSearchParams(location.search).get("proposal");
+  const QP_ID = qp && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(qp) ? qp : null;
+  let PROPOSAL_ID = QP_ID;
+  let RPCS = ["https://api.mainnet-beta.solana.com"];
+  let nameByVote = {};
 
-  // geometry
-  const W = 760, H = 300, m = { l: 46, r: 18, t: 22, b: 34 };
-  const iw = W - m.l - m.r, ih = H - m.t - m.b;
-  const x = t => m.l + (t / 100) * iw;
-  const y = v => m.t + ih - (v / 10.5) * ih;
-  const mult = t => 100 / t;
+  const MIN_SLOTS = 44;          // empty ruled lines shown before signatures arrive
+  const PROPOSAL_DISC = [26, 94, 189, 187, 116, 136, 53, 33]; // sha256("account:Proposal")[0..8]
 
-  const el = (name, attrs, parent) => {
-    const n = document.createElementNS(svgNS, name);
-    for (const k in attrs) n.setAttribute(k, attrs[k]);
-    (parent || svg).appendChild(n);
-    return n;
-  };
-
-  // hatch pattern for sub-quorum zone
-  const defs = el("defs", {});
-  const pat = el("pattern", { id: "hatch", width: 7, height: 7,
-    patternUnits: "userSpaceOnUse", patternTransform: "rotate(45)" }, defs);
-  const patG = el("g", { class: "zone-hatch" }, pat);
-  el("line", { x1: 0, y1: 0, x2: 0, y2: 7 }, patG);
-
-  // grid + y labels
-  [2, 4, 6, 8, 10].forEach(v => {
-    el("line", { class: "grid-line", x1: m.l, x2: W - m.r, y1: y(v), y2: y(v) });
-    el("text", { class: "axis-label", x: m.l - 8, y: y(v) + 4, "text-anchor": "end" })
-      .textContent = v + "×";
-  });
-  // x labels
-  [10, 25, 50, 75, 100].forEach(t => {
-    el("text", { class: "axis-label", x: x(t), y: H - 12, "text-anchor": "middle" })
-      .textContent = t + "%";
-  });
-
-  // sub-quorum zone
-  el("rect", { class: "zone-rect", x: m.l, y: m.t, width: x(QUORUM) - m.l, height: ih });
-  el("rect", { x: m.l, y: m.t, width: x(QUORUM) - m.l, height: ih, fill: "url(#hatch)" });
-  el("line", { class: "zone-edge", x1: x(QUORUM), x2: x(QUORUM), y1: m.t, y2: m.t + ih });
-  el("text", { class: "zone-note", x: x(QUORUM) + 8, y: m.t + 12 })
-    .textContent = "◀ below 10% — advisory only, pool doesn’t vote";
-
-  // parity line note at 1x
-  el("line", { class: "grid-line", x1: m.l, x2: W - m.r, y1: y(1), y2: y(1) });
-  el("text", { class: "axis-label", x: m.l - 8, y: y(1) + 4, "text-anchor": "end" }).textContent = "1×";
-  el("text", { class: "parity-note", x: W - m.r, y: y(1) - 7, "text-anchor": "end" })
-    .textContent = "1× = native staker parity";
-
-  // curve + area
-  let dLine = "", dArea = `M ${x(QUORUM)} ${y(0)}`;
-  for (let t = QUORUM; t <= 100; t += 0.5) {
-    const px = x(t), py = y(mult(t));
-    dLine += (dLine ? " L " : "M ") + px + " " + py;
-    dArea += ` L ${px} ${py}`;
+  // ---- tiny base58 --------------------------------------------------------
+  const ALPHA = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  function b58(bytes) {
+    let n = 0n;
+    for (const b of bytes) n = n * 256n + BigInt(b);
+    let s = "";
+    while (n > 0n) { s = ALPHA[Number(n % 58n)] + s; n /= 58n; }
+    for (const b of bytes) { if (b === 0) s = "1" + s; else break; }
+    return s;
   }
-  dArea += ` L ${x(100)} ${y(0)} Z`;
-  el("path", { class: "curve-area", d: dArea });
-  el("path", { class: "curve", d: dLine });
 
-  // crosshair + slider dot
-  const cross = el("line", { class: "crosshair", y1: m.t, y2: m.t + ih, x1: 0, x2: 0 });
-  const dot = el("circle", { class: "dot", r: 5.5, cx: x(12), cy: y(mult(12)) });
+  // ---- borsh walk of the Proposal account ---------------------------------
+  function parseProposal(buf) {
+    for (let i = 0; i < 8; i++) if (buf[i] !== PROPOSAL_DISC[i]) throw new Error("not a Proposal account");
+    const dv = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
+    let o = 8 + 32;                                   // discriminator + author
+    const tLen = dv.getUint32(o, true); o += 4 + tLen;
+    const dLen = dv.getUint32(o, true); o += 4 + dLen;
+    o += 8 * 4;                                       // creation, start, end, proposer_bp
+    const supportLamports = dv.getBigUint64(o, true); o += 8;
+    o += 8 * 3;                                       // for / against / abstain
+    const voting = buf[o] === 1; const finalized = buf[o + 1] === 1;
+    o += 3 + 8 + 4 + 4;                               // bools+bump, timestamp, vote_count, index
+    o += 1 + (buf[o] === 1 ? 32 : 0);                 // Option<consensus_result>
+    o += 8 + 8 + 32;                                  // snapshot_slot, seed, vote_account
+    const num = dv.getUint32(o, true);
+    const start = buf.length - num * 32;
+    const supporters = [];
+    for (let i = 0; i < num; i++) supporters.push(b58(buf.slice(start + i * 32, start + i * 32 + 32)));
+    return { supportLamports, voting, finalized, supporters };
+  }
 
-  // controls
-  const slider = document.getElementById("turnout");
-  const turnoutVal = document.getElementById("turnout-val");
-  const amountIn = document.getElementById("amount");
-  const readout = document.getElementById("readout");
-  const big = document.getElementById("readout-big");
-  const sub = document.getElementById("readout-sub");
-
-  const fmt = n => Math.round(n).toLocaleString("en-US");
-  const parseAmount = () => {
-    const v = parseFloat(amountIn.value.replace(/[^0-9.]/g, ""));
-    return (isFinite(v) && v > 0) ? v : 1000;
-  };
-
-  function update() {
-    const t = +slider.value;
-    const amt = parseAmount();
-    turnoutVal.textContent = t + "%";
-    if (t < QUORUM) {
-      readout.classList.add("blocked");
-      dot.setAttribute("opacity", 0);
-      big.innerHTML = `At <span class="hl">${t}%</span> turnout the trigger quorum isn’t met — ` +
-        `<span class="hl">no pool vote</span> is cast.`;
-      sub.textContent = "The poll publishes as an advisory signal only. Every extra voter pushes turnout toward the 10% trigger.";
-    } else {
-      readout.classList.remove("blocked");
-      const k = mult(t);
-      dot.setAttribute("opacity", 1);
-      dot.setAttribute("cx", x(t));
-      dot.setAttribute("cy", y(k));
-      big.innerHTML = `At <span class="hl">${t}%</span> turnout, your ` +
-        `<span class="hl">${fmt(amt)}</span> JitoSOL votes with the weight of ` +
-        `<span class="hl">${fmt(amt * k)}</span> staked SOL — a <span class="hl">${k.toFixed(1)}×</span> uplift.`;
-      sub.textContent = "The pool casts 100% of its stake, mirrored to the ballots cast — voters direct the non-voters’ share.";
+  async function rpc(method, params) {
+    let lastErr;
+    for (const url of RPCS) {
+      try {
+        const r = await fetch(url, {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+        });
+        const j = await r.json();
+        if (j.error) throw new Error(j.error.message || "rpc error");
+        return j.result;
+      } catch (e) { lastErr = e; }
     }
+    throw lastErr;
   }
-  slider.addEventListener("input", update);
-  amountIn.addEventListener("input", update);
-  amountIn.addEventListener("blur", () => { amountIn.value = fmt(parseAmount()); update(); });
 
-  // hover tooltip
-  function toChartT(evt) {
-    const r = svg.getBoundingClientRect();
-    const px = (evt.clientX - r.left) * (W / r.width);
-    return Math.min(100, Math.max(1, ((px - m.l) / iw) * 100));
+  // ---- render -------------------------------------------------------------
+  const sigsEl = document.getElementById("sigs");
+  const noteEl = document.getElementById("ledger-note");
+  const stPhase = document.getElementById("st-phase");
+  const stSigs = document.getElementById("st-sigs");
+  const stSupport = document.getElementById("st-support");
+  const statusEl = document.getElementById("status");
+
+  function slotHTML(rank, filled) {
+    if (!filled) return `<div class="sig empty"><span class="rank">${rank}</span>
+      <div class="body"><div class="name">awaiting signature</div></div></div>`;
+    const { name, vote, stakeSOL } = filled;
+    const short = vote.slice(0, 4) + "…" + vote.slice(-4);
+    const stake = stakeSOL != null ? ` · ${Math.round(stakeSOL).toLocaleString("en-US")} SOL` : "";
+    return `<div class="sig"><span class="rank">${rank}</span>
+      <div class="body">
+        <div class="name" title="${name || vote}">${name || short}</div>
+        <div class="meta">${short}${stake}</div>
+      </div><span class="seal">⬢</span></div>`;
   }
-  svg.addEventListener("pointermove", evt => {
-    const t = toChartT(evt);
-    const r = svg.getBoundingClientRect();
-    const scale = r.width / W;
-    cross.setAttribute("x1", x(t)); cross.setAttribute("x2", x(t));
-    cross.setAttribute("opacity", 1);
-    let html;
-    if (t < QUORUM) {
-      html = `<span class="tt-n">${t.toFixed(0)}%</span> turnout · below quorum — no pool vote`;
-      tooltip.style.top = (m.t + 40) * scale + "px";
-    } else {
-      const k = mult(t);
-      html = `<span class="tt-n">${t.toFixed(0)}%</span> turnout · <span class="tt-n">${k.toFixed(1)}×</span> weight`;
-      tooltip.style.top = y(k) * scale + "px";
-    }
-    tooltip.innerHTML = html;
-    tooltip.style.left = x(t) * scale + "px";
-    tooltip.style.opacity = 1;
-  });
-  svg.addEventListener("pointerleave", () => {
-    cross.setAttribute("opacity", 0);
-    tooltip.style.opacity = 0;
-  });
 
-  // accessibility table
-  const tbody = document.getElementById("table-body");
-  [10, 15, 20, 25, 33, 50, 75, 100].forEach(t => {
-    const tr = document.createElement("tr");
-    const k = mult(t);
-    tr.innerHTML = `<td>${t}%</td><td>${k.toFixed(1)}×</td><td>${fmt(1000 * k)}</td>`;
-    tbody.appendChild(tr);
-  });
+  function renderEmpty(message) {
+    let html = "";
+    for (let i = 1; i <= MIN_SLOTS; i++) html += slotHTML(i, null);
+    sigsEl.innerHTML = html;
+    noteEl.textContent = message;
+  }
 
-  update();
+  function renderLedger(filled, { phase, supportLamports, totalStake, live }) {
+    const slots = Math.max(MIN_SLOTS, filled.length + 6);
+    let html = "";
+    for (let i = 0; i < slots; i++) html += slotHTML(i + 1, filled[i] || null);
+    sigsEl.innerHTML = html;
+
+    const pctStr = totalStake ? (Number(supportLamports) / totalStake * 100).toFixed(1) : "—";
+    stSigs.textContent = String(filled.length);
+    stSupport.textContent = `${(Number(supportLamports) / 1e15).toFixed(1)}M SOL (${pctStr}%)`;
+    stPhase.textContent = phase === "finalized" ? "FINALIZED"
+      : phase === "sponsored" ? "SPONSORED — HEADING TO VOTE" : "GATHERING SPONSORSHIP";
+    if (live) statusEl.classList.add("live");
+    noteEl.textContent = phase === "gathering"
+      ? `Sponsorship stands at ${pctStr}% of active stake — the threshold is 15%.`
+      : "The sponsor threshold has been met. The Constitution proceeds to a vote of all staked SOL.";
+  }
+
+  // Baked roster from the repo (refreshed by GitHub Action; includes names).
+  async function loadBaseline() {
+    try {
+      const cfg = await (await fetch("/data/config.json", { cache: "no-store" })).json();
+      if (Array.isArray(cfg.rpcs) && cfg.rpcs.length) RPCS = cfg.rpcs;
+      if (!QP_ID && cfg.proposalId) PROPOSAL_ID = cfg.proposalId;
+    } catch (e) { /* not served from the site — artifact preview */ }
+    try {
+      const base = await (await fetch("/data/signers.json", { cache: "no-store" })).json();
+      if (base.signers) for (const s of base.signers) if (s.name) nameByVote[s.vote] = s.name;
+      if (base.signers?.length && (!QP_ID || QP_ID === base.proposalId)) {
+        renderLedger(
+          base.signers.map(s => ({ vote: s.vote, name: s.name, stakeSOL: s.stakeSol })),
+          { phase: base.phase, supportLamports: base.supportLamports,
+            totalStake: Number(base.totalStakeLamports || 0), live: false });
+      }
+    } catch (e) { /* no baked roster yet */ }
+  }
+
+  // Live top-up straight from the chain (catches signatures between bakes).
+  async function refresh() {
+    if (!PROPOSAL_ID) return;
+    try {
+      const [acct, votes] = await Promise.all([
+        rpc("getAccountInfo", [PROPOSAL_ID, { encoding: "base64" }]),
+        rpc("getVoteAccounts", [{ commitment: "confirmed" }]),
+      ]);
+      if (!acct || !acct.value) return;
+
+      const raw = Uint8Array.from(atob(acct.value.data[0]), c => c.charCodeAt(0));
+      const p = parseProposal(raw);
+
+      const info = {};
+      let totalStake = 0;
+      for (const v of [...votes.current, ...votes.delinquent]) {
+        info[v.votePubkey] = v;
+        totalStake += v.activatedStake;
+      }
+
+      renderLedger(
+        p.supporters.map(vote => ({
+          vote,
+          name: nameByVote[vote] || null,
+          stakeSOL: info[vote] ? info[vote].activatedStake / 1e9 : null,
+        })),
+        { phase: p.finalized ? "finalized" : p.voting ? "sponsored" : "gathering",
+          supportLamports: p.supportLamports, totalStake, live: true });
+    } catch (e) { /* keep whatever is rendered (baseline or empty state) */ }
+  }
+
+  renderEmpty("The ledger awaits the proposal's creation on-chain.");
+  loadBaseline().then(refresh);
+  setInterval(refresh, 60_000);
 })();
 </script>
 </html>
