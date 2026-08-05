@@ -14,6 +14,8 @@ jobs:
         with:
           node-version: 20
       - run: node scripts/update-signers.mjs
+        env:
+          SIGNERS_RPC_URL: ${{ secrets.SIGNERS_RPC_URL }}
       - name: Commit if changed
         run: |
           if ! git diff --quiet data/signers.json; then

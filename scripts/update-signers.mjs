@@ -7,7 +7,12 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const cfg = JSON.parse(readFileSync(new URL("../data/config.json", import.meta.url), "utf8"));
 const PROPOSAL_ID = process.argv[2] || cfg.proposalId;
-const RPCS = cfg.rpcs || ["https://api.mainnet-beta.solana.com"];
+// A private RPC (e.g. Helius) can be supplied via Actions secret without
+// exposing it in this public repo; it takes priority over the config list.
+const RPCS = [
+  ...(process.env.SIGNERS_RPC_URL ? [process.env.SIGNERS_RPC_URL] : []),
+  ...(cfg.rpcs || ["https://api.mainnet-beta.solana.com"]),
+];
 const OUT = new URL("../data/signers.json", import.meta.url);
 
 const PROPOSAL_DISC = [26, 94, 189, 187, 116, 136, 53, 33]; // sha256("account:Proposal")[0..8]
@@ -75,7 +80,13 @@ async function main() {
       }
 
       // On-chain validator names: Config program validator-info records.
+      // Seed from the previous bake so a throttled lookup never blanks
+      // names that were already resolved.
       const names = {};
+      try {
+        const prev = JSON.parse(readFileSync(OUT, "utf8"));
+        for (const s of prev.signers || []) if (s.identity && s.name) names[s.identity] = s.name;
+      } catch (e) { /* first run */ }
       try {
         const cfgAccts = await rpc("getProgramAccounts",
           ["Config1111111111111111111111111111111111111", { encoding: "jsonParsed" }]);
