@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>SGP-1 Sponsorship Targeting</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --bg: #0A0E14; --surface: #121822; --surface-2: #1A222E; --surface-3: #222C3A;
+    --line: rgba(228,232,239,.09); --line-strong: rgba(228,232,239,.16);
+    --ink: #E4E8EF; --muted: #8A94A6; --faint: #5A6472;
+    --signed: #2EE6A6; --target: #E3A93C; --netnew: #9A8CF0;
+    --signed-bg: rgba(46,230,166,.11); --target-bg: rgba(227,169,60,.11); --netnew-bg: rgba(154,140,240,.12);
+    --cross: #2EE6A6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--ink); margin: 0;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 24px 22px 80px; }
+  a { color: var(--signed); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* header */
+  header { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap;
+           border-bottom: 1px solid var(--line-strong); padding-bottom: 18px; margin-bottom: 22px; }
+  h1 { font-size: 19px; font-weight: 650; letter-spacing: -.01em; margin: 0 0 4px; }
+  h1 .tag { font-family: ui-monospace, monospace; font-size: 11px; color: var(--target);
+            background: var(--target-bg); border: 1px solid var(--target); border-radius: 5px;
+            padding: 2px 7px; margin-left: 8px; vertical-align: 2px; letter-spacing: .06em; }
+  .sub { color: var(--muted); font-size: 13px; margin: 0; }
+  .meta { text-align: right; font-family: ui-monospace, monospace; font-size: 11.5px; color: var(--faint);
+          line-height: 1.7; }
+  .meta b { color: var(--muted); font-weight: 500; }
+  .meta .rbtn { display: inline-block; margin-top: 6px; cursor: pointer; color: var(--signed);
+                border: 1px solid var(--line-strong); border-radius: 6px; padding: 4px 12px; background: var(--surface); }
+  .meta .rbtn:hover { background: var(--surface-2); }
+
+  /* KPI tiles */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  @media (max-width: 900px) { .kpis { grid-template-columns: repeat(2, 1fr); } }
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 15px 17px; }
+  .kpi.hero { border-color: var(--target); background: linear-gradient(180deg, var(--target-bg), var(--surface)); }
+  .kpi .lbl { font-size: 10.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); margin-bottom: 8px; }
+  .kpi .val { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums;
+              font-size: 26px; font-weight: 650; letter-spacing: -.02em; line-height: 1.05; }
+  .kpi .val .u { font-size: 14px; color: var(--muted); font-weight: 400; }
+  .kpi.hero .val { color: var(--target); }
+  .kpi .sub2 { font-size: 12px; color: var(--muted); margin-top: 5px; }
+  .bar { height: 6px; background: var(--surface-3); border-radius: 3px; margin-top: 10px; overflow: hidden; position: relative; }
+  .bar > i { display: block; height: 100%; background: var(--signed); border-radius: 3px; }
+  .bar .thresh { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--target); }
+
+  /* controls */
+  .controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+  .controls input[type=text] {
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 7px; color: var(--ink);
+    padding: 7px 11px; font-size: 13px; min-width: 220px; font-family: inherit;
+  }
+  .controls input:focus { outline: none; border-color: var(--muted); }
+  .chip { font-size: 12px; color: var(--muted); cursor: pointer; user-select: none;
+          border: 1px solid var(--line-strong); border-radius: 7px; padding: 6px 11px; background: var(--surface); }
+  .chip.on { color: var(--ink); border-color: var(--muted); background: var(--surface-2); }
+  .chip input { display: none; }
+
+  /* section headers */
+  .sec { margin: 30px 0 10px; display: flex; align-items: center; gap: 12px; }
+  .sec h2 { font-size: 14px; font-weight: 650; margin: 0; letter-spacing: .01em; }
+  .sec .pill { font-family: ui-monospace, monospace; font-size: 10.5px; letter-spacing: .08em;
+               padding: 2px 8px; border-radius: 999px; }
+  .pill.t { color: var(--target); background: var(--target-bg); border: 1px solid var(--target); }
+  .pill.s { color: var(--signed); background: var(--signed-bg); border: 1px solid var(--signed); }
+  .pill.n { color: var(--netnew); background: var(--netnew-bg); border: 1px solid var(--netnew); }
+  .sec .count { color: var(--faint); font-size: 12px; font-family: ui-monospace, monospace; margin-left: auto; }
+
+  /* table */
+  .tbl-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 860px; }
+  th { text-align: left; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--faint);
+       font-weight: 600; padding: 11px 12px; border-bottom: 1px solid var(--line-strong); white-space: nowrap; }
+  th.r, td.r { text-align: right; }
+  td { padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--surface-2); }
+  .num { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .rank { color: var(--faint); font-family: ui-monospace, monospace; font-size: 12px; width: 30px; }
+  .vname { font-weight: 550; }
+  .vname .anon { color: var(--faint); font-weight: 400; font-family: ui-monospace, monospace; font-size: 12.5px; }
+  .delinq { font-size: 9.5px; letter-spacing: .08em; color: #E5534B; border: 1px solid #E5534B;
+            border-radius: 4px; padding: 1px 5px; margin-left: 8px; vertical-align: 1px; }
+  .va { font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); cursor: pointer; }
+  .va:hover { color: var(--ink); }
+  .va .copied { color: var(--signed); font-size: 11px; margin-left: 6px; }
+  .contact { font-size: 12px; }
+  .contact a { color: var(--muted); }
+  .contact a:hover { color: var(--signed); }
+  .contact .none { color: var(--faint); }
+  .proj { font-family: ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .proj .pct { color: var(--ink); font-weight: 600; }
+  .proj .plus { color: var(--faint); font-size: 11px; }
+  tr.crossed td { border-bottom: 2px solid var(--cross); }
+  .crossmark td { padding: 0; }
+  .crossmark .bar2 { background: var(--signed-bg); color: var(--signed); font-family: ui-monospace, monospace;
+    font-size: 11px; letter-spacing: .1em; text-align: center; padding: 6px; border-top: 1px solid var(--signed);
+    border-bottom: 1px solid var(--signed); }
+  td.done-ico { color: var(--signed); font-family: ui-monospace, monospace; }
+
+  .footnote { color: var(--faint); font-size: 12px; margin-top: 26px; line-height: 1.7; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    background: var(--surface-3); border: 1px solid var(--line-strong); color: var(--ink);
+    padding: 10px 18px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>SGP-1 Sponsorship Targeting <span class="tag">INTERNAL</span></h1>
+      <p class="sub">Double Disinflation sponsors cross-referenced against The Solana Constitution (SGP-1). The warm call list.</p>
+    </div>
+    <div class="meta">
+      <div>data as of <b id="asof">—</b></div>
+      <div id="livemode">snapshot</div>
+      <span class="rbtn" id="refresh">↻ Refresh</span>
+    </div>
+  </header>
+
+  <div class="kpis" id="kpis"></div>
+
+  <div class="controls">
+    <input type="text" id="search" placeholder="Filter by name…" autocomplete="off">
+    <label class="chip" id="f-delinq"><input type="checkbox">Hide delinquent</label>
+    <label class="chip" id="f-contact"><input type="checkbox">Only with contact info</label>
+  </div>
+
+  <div class="sec"><span class="pill t">○ OUTSTANDING</span><h2>Warm targets — sponsored Disinflation, not yet SGP-1</h2><span class="count" id="c-out"></span></div>
+  <div class="tbl-wrap"><table id="t-out"></table></div>
+
+  <div class="sec"><span class="pill s">✓ SIGNED BOTH</span><h2>Converted — sponsored both proposals</h2><span class="count" id="c-both"></span></div>
+  <div class="tbl-wrap"><table id="t-both"></table></div>
+
+  <div class="sec"><span class="pill n">+ NET-NEW</span><h2>SGP-1 sponsors who did not sponsor Disinflation</h2><span class="count" id="c-new"></span></div>
+  <div class="tbl-wrap"><table id="t-new"></table></div>
+
+  <p class="footnote" id="fn"></p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SNAPSHOT = {"generatedAt":"2026-08-06T13:17:58.364Z","totalActiveStakeSol":434423483,"sgp1":{"support":9.32,"supportSol":40506137,"count":46},"disinflation":{"support":14.98,"supportSol":65095954,"count":82},"summary":{"signedBoth":15,"signedBothSol":4119422,"outstanding":67,"outstandingSol":60995274,"outstandingPct":14.04,"sgp1Only":31,"sgp1OnlySol":36389122},"signedBoth":[{"vote":"CooLbbZy5Xmdt7DiHPQ3ss2uRXawnTXXVgpMS8E8jDzr","name":"Cavey Cool","stakeSol":796885,"delinquent":false,"website":"https://github.com/cavemanloverboy","keybase":null},{"vote":"BeachiopjxQxL7CaHNSZsynApiZCKx9QFVtcWNz3jDBo","name":"Solana Beach Validator","stakeSol":579407,"delinquent":false,"website":"https://solanabeach.io","keybase":"solanabeach"},{"vote":"1Dadio3JRvpEjY6iSmXmhbGy9RiU8Nxh2GmoVbNusbE","name":"1dad | Solfege","stakeSol":340238,"delinquent":false,"website":"https://1dad.io","keybase":"1dad"},{"vote":"86Sw9R6ynPmXnHfwUWinXtq1QoF2KHesfQQyZG5r8sXo","name":"Digital Energy","stakeSol":298644,"delinquent":false,"website":"https://digital-energy.io","keybase":null},{"vote":"EBVj3uwSKZpqEb1K267JaPxDQhULVqCy6hYeQqjsPh81","name":"Titan Analytics","stakeSol":297690,"delinquent":false,"website":"http://TitanAnalytics.io/","keybase":null},{"vote":"FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ","name":"Lantern","stakeSol":278418,"delinquent":false,"website":"https://www.lantern.one/","keybase":null},{"vote":"gridZ5cMHjWGktAQt6o36NtF7XSv19nJBrW83zmo7BM","name":"Grid Systems","stakeSol":271413,"delinquent":false,"website":"http://gridsystems.xyz/","keybase":null},{"vote":"StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp","name":"Step Finance","stakeSol":210650,"delinquent":false,"website":"https://www.step.finance/","keybase":null},{"vote":"FCvNkHa4U3yh7AXWGGL2jWLWiSRouR8EtzY5WVTHKTHa","name":"H2O Nodes\ud83d\udca7","stakeSol":188824,"delinquent":false,"website":"https://h2o-nodes.com","keybase":null},{"vote":"soLStAckuvkHtNzHF1cwmeSRG1FzVxKxwsdWZ1yrHrz","name":"SolStack by Corvus Labs","stakeSol":183486,"delinquent":false,"website":"https://solstack.app","keybase":null},{"vote":"GMpKrAwQ9oa4sJqEYQezLr8Z2TUAU72tXD4iMyfoJjbh","name":"Moonlet","stakeSol":179129,"delinquent":false,"website":"https://moonlet.io","keybase":"moonletwallet"},{"vote":"bookLxG3LkSmt4htJ1x9zPw6E34RRMAi7sUn5mM3CNN","name":"The Library","stakeSol":149613,"delinquent":false,"website":"https://www.thelibrary.vc/validator","keybase":null},{"vote":"mesh3Px7WMi7Dkxke4ZZBULoKHM6sp37wKtg4DwPqPY","name":"Mesh Validator","stakeSol":123083,"delinquent":false,"website":"https://meshvalidator.com","keybase":null},{"vote":"B1rsc6jv3RsFpkak8qvJN3PfGYSg9E3Uw1joaV1EoiFj","name":"RevTec | 100% Block Reward","stakeSol":112292,"delinquent":false,"website":"https://revtec.fi","keybase":null},{"vote":"nateBZg7oHVPLB2samBLkKvfzedU3ALZBexMFPMKjn1","name":"Epoch.Day","stakeSol":109651,"delinquent":false,"website":"https://epoch.day/","keybase":null}],"outstanding":[{"vote":"he1iusunGwqrNtafDtLdhsUQDFvo13z9sUa36PauBtk","name":"Helius","stakeSol":16003205,"delinquent":false,"website":"https://helius.dev","keybase":null},{"vote":"CatzoSMUkTRidT5DwBxAC2pEtnwMBTpkCepHkFgZDiqb","name":"Jupiter","stakeSol":12472697,"delinquent":false,"website":"https://jup.ag","keybase":null},{"vote":"DumiCKHVqoCQKD8roLApzR5Fit8qGV5fVQsJV9sTZk4a","name":"Staking Facilities | MEV \ud83d\udd25","stakeSol":6653304,"delinquent":false,"website":"https://stakingfacilities.com","keybase":null},{"vote":"DdCNGDpP7qMgoAy6paFzhhak2EeyCZcgjH7ak5u5v28m","name":"Kiln1","stakeSol":5904596,"delinquent":false,"website":"https://kiln.fi","keybase":null},{"vote":"shft7Fry1js37Hm9wq4dfwcZSp2DyKszeWMvEpjYCQ1","name":"blueshift","stakeSol":3606212,"delinquent":false,"website":"https://blueshift.gg","keybase":null},{"vote":"EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72","name":"Solana Compass \ud83e\udded Solana For The People","stakeSol":1344501,"delinquent":false,"website":"https://solanacompass.com/staking","keybase":null},{"vote":"Haz7b47sZBpxh9SwggGndN3fAyNQ1S949BPdxWXS3ab6","name":"Temporal Emerald","stakeSol":1237252,"delinquent":false,"website":"https://temporal.xyz","keybase":null},{"vote":"DsiG71AvUHUEo9rMMHqM9NAWQ6ptguRAHyot6wGzLJjx","name":"Pumpkin's Pool \u2764\ufe0f","stakeSol":1032468,"delinquent":false,"website":"https://pumpkinspool.com","keybase":"pumpkinspool"},{"vote":"Ha1VoTEPWFQp1wZjbQhBNXJftuHvimu1ruzF3xKYRPDQ","name":"Ha1iad3","stakeSol":900791,"delinquent":false,"website":"https://ha1iad3.com","keybase":null},{"vote":"9jYFwBfbjYmvasFbJyES9apLJDTkwtbgSDRWanHEvcRw","name":"Watchtower","stakeSol":643986,"delinquent":false,"website":"https://italo.dev","keybase":null},{"vote":"MajorF3gAYEmUhqkoRXoL546Zim8nMa82tuUTz9LkmE","name":"Harmonic Major","stakeSol":640449,"delinquent":false,"website":"https://harmonic.gg","keybase":null},{"vote":"hy1oJTV2kX9acsqpwk7hbteqXFw9VDbWvbxoamFEufW","name":"Hylo","stakeSol":488630,"delinquent":false,"website":"https://hylo.so/","keybase":null},{"vote":"5iJDEVRi1nMLwKAWhYbEokZnvBAe15rgFaHGkggVEP9z","name":"Stardust Staking - 0% fee forever + MEV 0% fee","stakeSol":485215,"delinquent":false,"website":"https://starduststaking.com","keybase":null},{"vote":"HHLMTHR9YoyDNsWKVJBT5AKrX86iQjkiKRFRrnaFubgq","name":"Velox Validator","stakeSol":387011,"delinquent":false,"website":"https://veloxvalidator.xyz","keybase":null},{"vote":"oPaLTmyvoUhW26QCMwLA5JNUeBYy72PDpFoXQF8SeX4","name":"Temporal Opal","stakeSol":348561,"delinquent":false,"website":"https://www.temporal.xyz/","keybase":null},{"vote":"DPmsofVJ1UMRZADgwYAHotJnazMwohHzRHSoomL6Qcao","name":"JStaking: 0% fee \u00b7 top returns","stakeSol":284858,"delinquent":false,"website":"https://jstaking.io","keybase":"joogh"},{"vote":"MARvNLH6rCLroQEGr8fWNxygJ7fHJRCfykRk9DqzwVn","name":"\ud83e\uddd1\u200d\ud83c\udf73 Customized Rewards (5.90% APY)","stakeSol":284043,"delinquent":false,"website":null,"keybase":null},{"vote":"BDn3HiXMTym7ZQofWFxDb7ZGQX6GomQzJYKfytTAqd5g","name":"StakeCraft","stakeSol":274258,"delinquent":false,"website":"https://stakecraft.com","keybase":null},{"vote":"inQRWLtWjrZYz4z9xiPH9G8oMaGqKdeSeh7DUkGPVDL","name":"Golden Validator - 0% Fee & MEV","stakeSol":272338,"delinquent":false,"website":null,"keybase":null},{"vote":"8zuMRTXThoPTTPLLvaiKiJshLLCqGMt9BdRjjCL19xBc","name":"DawnLabs | 0% Fee + Block Rewards Sharing","stakeSol":269599,"delinquent":false,"website":"https://www.dawnlabs.tech/","keybase":null},{"vote":"radYEig9KGrMTMWbWRFV7LStotQbnLgPaEFHVDsudQz","name":"Radiants","stakeSol":267157,"delinquent":false,"website":"https://radiant.nexus/","keybase":null},{"vote":"phz34EcgWRCT9otPzRS2JtSzVHxQJk4SovqJvV1TQk8","name":"YIELD","stakeSol":261691,"delinquent":false,"website":"https://jup.ag/tokens/phaseZSfPxTDBpiVb96H4XFSD8xHeHxZre5HerehBJG","keybase":null},{"vote":"votem3UdGx5xWFbY9EFbyZ1X2pBuswfR5yd2oB3JAaj","name":"BrewlabsHQ","stakeSol":261312,"delinquent":false,"website":"https://www.brewlabs.so/","keybase":null},{"vote":"CTDGxxJBrZVqUUHdHopLn4k4gtc2PCpcM9TB7ZEC4Hu2","name":"Cointelegraph Decentralization Guardians","stakeSol":258171,"delinquent":false,"website":"https://cointelegraph-guardians.com/solana/","keybase":null},{"vote":"7emL18Bnve7wbYE9Az7vYJjikxN6YPU81igf6rVU5FN8","name":"Temporal Topaz","stakeSol":247145,"delinquent":false,"website":"https://temporal.xyz","keybase":null},{"vote":"D3QPJm7BDzzPeRG51YZSEz3LfV7GvFNu9NkcibzURxuj","name":"Starke Finance","stakeSol":245838,"delinquent":false,"website":"https://starke.finance/staking","keybase":null},{"vote":"GA2t11gJcmuZ4y7pShTzgYDkxVaJaVQJqkVUqojhPPsT","name":"SolBrothers","stakeSol":231509,"delinquent":false,"website":"https://t.me/solana_brothers","keybase":null},{"vote":"VotESBSkLKU8vebS6wTR2rzWWJsLc6YThYS6tebPxXq","name":"Paragon","stakeSol":227312,"delinquent":false,"website":"https://paragon.gdn/","keybase":null},{"vote":"mnvkHm47ZmRKoSWuQZAfXLRiDPiKCq8PWkMWrp1Wwqe","name":"gripto","stakeSol":225060,"delinquent":false,"website":"https://x.com/nl_gripto","keybase":null},{"vote":"Ac1beBKixfNdrTAac7GRaTsJTxLyvgGvJjvy4qQfvyfc","name":"Stronghold","stakeSol":204995,"delinquent":false,"website":"https://strongholdsol.com/","keybase":null},{"vote":"BH2PMb9vuHxkVFMMHbH8iudCoBfUoX5tVaHfnEkKJ2gQ","name":"Bubbles","stakeSol":204153,"delinquent":false,"website":"https://powerpuffgirls.fandom.com/wiki/Bubbles","keybase":null},{"vote":"Gvt8s5Bwnhg4G27VbnT1Zkfh7Jsztq6CNvZcc5anPonS","name":"Kevred","stakeSol":201189,"delinquent":false,"website":"https://www.kevred.com/validator","keybase":null},{"vote":"Ehdn9LdjTAURQSMoDPERXLehtvzy7QD762wwPkzGT7RS","name":"SuperteamDE x Staking Facilities | Public Goods Validator","stakeSol":199647,"delinquent":false,"website":"https://de.superteam.fun/","keybase":null},{"vote":"53RJBy7aBGA7Aag6AryxEmBbsHDgwfBWagLrPbGHnfvR","name":"vladika","stakeSol":195223,"delinquent":false,"website":"https://vladika.love","keybase":null},{"vote":"voEskim7SFWrPx1tV2PVisqyrJejxmDEARX11mtZ5vo","name":"polkachu.com","stakeSol":184509,"delinquent":false,"website":"https://polkachu.com","keybase":"polkachu"},{"vote":"FGtsnE1HB4bBi6g4xAt5mvWtuC3qBPWPBgWVrnRmUiVH","name":"Sunshine","stakeSol":181961,"delinquent":false,"website":"https://sunshine-validator.com","keybase":null},{"vote":"b1uei1YN8YVb3qHy2JitBx4Fq9nAatLQFcNbnk6Ex8p","name":"Blue Sky","stakeSol":181185,"delinquent":false,"website":"https://bluesky.lat/","keybase":null},{"vote":"nymsndUdAZyUPpWYz5VEg8Ghj9cFvwTRgciLogpmYaQ","name":"Hypo Nyms","stakeSol":172886,"delinquent":false,"website":"https://validator.nyms.wtf","keybase":null},{"vote":"5daP6pZoPSak6UEKuRg2HHjvTPpqqwB113oNamGNKuuZ","name":"Lumos Maxima","stakeSol":169321,"delinquent":false,"website":"https://lumosmaxima.xyz/","keybase":null},{"vote":"CiTYUYPAPHdcri5yEfsmqVcs54J6j8X1QaiFLgYqMVe","name":"Phase Stake","stakeSol":163451,"delinquent":false,"website":"https://phase.cc/stake","keybase":null},{"vote":"8D8XL6ovqx15RKwC1XtFyTz6H8JYF2fUsxTnsY4b123P","name":"STEALTH","stakeSol":154453,"delinquent":false,"website":"https://x.com/stevlth_sol","keybase":"stevlth"},{"vote":"5afRnmkFn1pRU9oussqwk1RRBVyoDgUkL16Jz4qNf574","name":"Staking Kiwi","stakeSol":151409,"delinquent":false,"website":"https://solanastaking.kiwi","keybase":null},{"vote":"BSGMtRHy9qvsPbUKtT8yqd7nNqn2urTcSMVUgzj9zJVd","name":"Black Sea Gold","stakeSol":151350,"delinquent":false,"website":"https://blackseagold.io","keybase":null},{"vote":"HwcVgFSgmfeeF7zGFUBLoVA8Hpx8rtwyfCrJ1npBaSVC","name":"Solya","stakeSol":149615,"delinquent":false,"website":"https://solya.studio","keybase":null},{"vote":"Fhks5gukimP6vxKYbRY4V1aw888EgHhpdDSscD9V6bub","name":"CryptoVik","stakeSol":146269,"delinquent":false,"website":"https://cryptovik.info","keybase":null},{"vote":"3QPGLackJy5LKctYYoPGmA4P8ncyE197jdxr1zP2ho8K","name":"AndrewInUA","stakeSol":133135,"delinquent":false,"website":"https://andrewinua.com","keybase":null},{"vote":"hxVjzDmta9TuN1gM981TRKnfwG2uZ9TQDGwSCs3uDow","name":"Suzuko Stake","stakeSol":126580,"delinquent":false,"website":"https://suzuko.tech/","keybase":null},{"vote":"CtzNnqzSLwNtkzi2yEWvq4w3GYQ5gSpCagqFZ5TbdSKb","name":"Citizen Node","stakeSol":123799,"delinquent":false,"website":"https://citizennode.xyz/","keybase":null},{"vote":"steakxfubt37xYdvuXz7BV5Uhhhk1FyJx9zGHfDcTVr","name":"Validator 1","stakeSol":122042,"delinquent":false,"website":"https://validator1.net","keybase":null},{"vote":"fuyugZxM5S4NyV3ZYoc6ebs3fmRTrZ3X27MKCFvHpVD","name":"Kisetsu Stake","stakeSol":118440,"delinquent":false,"website":"https://kisetsu.xyz/","keybase":null},{"vote":"YE111yizdzBA7JQKMXjy9VSx1shKAczUbs3b3e6vKQH","name":"Mellow Yellow","stakeSol":118231,"delinquent":false,"website":null,"keybase":null},{"vote":"94EhHE7MaKHq4p8oFADeyizDjwYwgFn1YBYGky8mR35z","name":"[NODERS]","stakeSol":115044,"delinquent":false,"website":"https://noders.team","keybase":"nodersteam"},{"vote":"9ymU1ayh9mZVyDL4dUUtXKtX1wCaFNzZPGutLJgqzuC1","name":"SunshineVR","stakeSol":114211,"delinquent":false,"website":"https://sunshinevr.io","keybase":null},{"vote":"eyeVhGmVEoPSWmQU2wP5WZmMihPBTCk7kMMm4VhuAKS","name":"Eyenotion","stakeSol":113249,"delinquent":false,"website":"https://eyenotion.vote","keybase":null},{"vote":"vnd1jskPHR2gfMtgTtq6xCwANrAiNbQTKgVBAJHnMke","name":"Vandal","stakeSol":109583,"delinquent":false,"website":null,"keybase":null},{"vote":"dedxrPfNqPKBRmUyP9LDkaitpQzU6PD44jA6GP9Ndhk","name":"Ded Monkes","stakeSol":108121,"delinquent":false,"website":"https://dedmonkes.xyz","keybase":null},{"vote":"te1exfYnykh2cFGCwGSLQu26Dpr8n2PozvBqH5Eoi3K","name":"Telemetry","stakeSol":105815,"delinquent":false,"website":"https://telemetry.technology/","keybase":null},{"vote":"dstqVmt3cDH43Ux2SeTY2Hza1eVW6pwGLwehWCLfuPd","name":"Dust Eleven","stakeSol":103070,"delinquent":false,"website":null,"keybase":null},{"vote":"jntrMCSkeNagaMM437fhZxLYbFJh6pvj68bQDZx2pXf","name":"Janitor","stakeSol":102120,"delinquent":false,"website":null,"keybase":null},{"vote":"DCKYVqFDwUs5m2DhW9muK2EX86pootvWD8wXA4nSqDxU","name":"Dicky","stakeSol":102099,"delinquent":false,"website":null,"keybase":null},{"vote":"4269foF8CYyT8SynFSYHiKFzHva5YL6PoAQj9pH3mQmh","name":"Mice Stakin'","stakeSol":101974,"delinquent":false,"website":null,"keybase":null},{"vote":"roYL9AoyuGae7uEAErzZhPSSxnLLZU4TNx8wmwCk77r","name":"Royal","stakeSol":101870,"delinquent":false,"website":null,"keybase":null},{"vote":"1i1yax3thZfiV8id5HTA61bjsxEi4pbjmhXsqy6JePP","name":"Lilith","stakeSol":101824,"delinquent":false,"website":null,"keybase":null},{"vote":"STevE9xVb1QfBHU4GgEn28r9oikAf5yxKJddF7fufwb","name":"STEVE","stakeSol":101191,"delinquent":false,"website":null,"keybase":null},{"vote":"hnhxfrndd827LET6jvnQV4aWqpS2EedaHcT4gj8ArSu","name":"Hodl & Hodl LLLP","stakeSol":101047,"delinquent":false,"website":"https://hodl-lllp.com/","keybase":null},{"vote":"chdv8H9fPfk2zFqSVaxRjsEo2qEDmswbju3BVgAHPNb","name":"CH Dev","stakeSol":100959,"delinquent":false,"website":"https://ch-dev-eta.vercel.app/","keybase":null},{"vote":"HYUU9pLdZRXsMSy3efikYHLKagtubP2UZYtmfwP9FXpu","name":"Firstset","stakeSol":100089,"delinquent":false,"website":"https://x.com/firstset_","keybase":null}],"sgp1Only":[{"vote":"iZADA4YKVRJZJaDUV3j79DzyK4VJkK3DGTfvvqvbC1K","name":null,"stakeSol":3598006,"delinquent":false,"website":null,"keybase":null},{"vote":"oixpqSNX7CKWHw93ViA8u1CcLzZXDmacKJjV4AvxMZE","name":null,"stakeSol":2502396,"delinquent":false,"website":null,"keybase":null},{"vote":"8mHUDJjzPo2AwJp8SHKmG9rk9ftWTp7UysqYz36cMpJe","name":null,"stakeSol":2502383,"delinquent":false,"website":null,"keybase":null},{"vote":"JDMq8hxZnad2smKLGkFbfg8zVMZHKQcMugD4tMR9u2da","name":null,"stakeSol":2500000,"delinquent":false,"website":null,"keybase":null},{"vote":"BU3ZgGBXFJwNTrN6VUJ88k9SJ71SyWfBJTabYqRErm4F","name":null,"stakeSol":2500000,"delinquent":false,"website":null,"keybase":null},{"vote":"33hurzEz6aEnzfESL6pnNyR6DCgcKzssT1pwSzDCBTRQ","name":null,"stakeSol":2500000,"delinquent":false,"website":null,"keybase":null},{"vote":"HxYHGzR58gyf6c4JAX85eK8GVuaZU2zne4be82Lq9SBQ","name":null,"stakeSol":2322629,"delinquent":false,"website":null,"keybase":null},{"vote":"CxFH1pqJnEmyaE4wEwqdqMKpQMpkmdaMxhS7SzpHokA8","name":null,"stakeSol":2182666,"delinquent":false,"website":null,"keybase":null},{"vote":"6jzDwKeR21EFHwaRgZMefMxJ9D2vnQRqfYxkpUuJppPh","name":null,"stakeSol":1937410,"delinquent":false,"website":null,"keybase":null},{"vote":"BkSS8kGUNcQkTgEKMmBhHxGVLdzw43EAzDYpZqyyxFrT","name":null,"stakeSol":1881605,"delinquent":false,"website":null,"keybase":null},{"vote":"74pfDmYto6aAqCzFH1mNJ8NxF7A4LQ4cXkipGwgjY39u","name":null,"stakeSol":1837000,"delinquent":false,"website":null,"keybase":null},{"vote":"HhYEE3dAShc3772wEiy73XDYnLjVxyBL8eAWKyRcF14y","name":null,"stakeSol":1835665,"delinquent":false,"website":null,"keybase":null},{"vote":"7jPqpHuN5v59dtBom2tjmYEfi6WaM4sFtJeTD6fzhcdS","name":null,"stakeSol":1461029,"delinquent":false,"website":null,"keybase":null},{"vote":"Eqwa3Jo6aa4ugEbPZNcDQyBfVU7dSz3VR8CcDYRrPyh4","name":null,"stakeSol":1324631,"delinquent":false,"website":null,"keybase":null},{"vote":"Bkskrv38Kn7zJR5mvmbCDGn2M4Jyhzt2ZqwQXV6rYnXa","name":null,"stakeSol":749068,"delinquent":false,"website":null,"keybase":null},{"vote":"J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv","name":null,"stakeSol":557745,"delinquent":false,"website":null,"keybase":null},{"vote":"6q1VNp8Vy2Go12vb8CwbjUqqj2SXr2JYftJRWs71sW23","name":"Exo Tech","stakeSol":550883,"delinquent":false,"website":"https://exotechnologies.xyz/solana","keybase":null},{"vote":"GREEDkpTvpKzcGvBu9qd36yk6BfjTWPShB67gLWuixMv","name":"GREED Academy - funding education","stakeSol":549615,"delinquent":false,"website":"https://greed.academy","keybase":null},{"vote":"J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp","name":"Phantom Validator","stakeSol":417096,"delinquent":false,"website":"https://phantom.app","keybase":"phantomwallet"},{"vote":"48oxpSHQkM4sdXUY9NQ8KnEtebzZbyk8uUT7JRdVQNuf","name":"LUX8 Validator","stakeSol":302351,"delinquent":false,"website":"https://lux8.net","keybase":null},{"vote":"6tgtejPHUHR1pECzXqQT8EHZqnKCWZFSqdZXDyBaKe3b","name":null,"stakeSol":280746,"delinquent":false,"website":null,"keybase":null},{"vote":"6JfBwvcz5QUKQJ37BMKTLrf968DDJBtwoZLw19aHwFtQ","name":"Spectrum Staking","stakeSol":274069,"delinquent":false,"website":"https://spectrumstaking.net/","keybase":null},{"vote":"adraBKLNY3DL3pg6SJRDYiMA8BsznaWpUdE42X41gbP","name":"Adrastea Validator","stakeSol":261226,"delinquent":false,"website":"https://adrastea.fi/","keybase":null},{"vote":"gaToR246dheK1DGAMEqxMdBJZwU4qFyt7DzhSwAHFWF","name":"Valigator Open","stakeSol":258918,"delinquent":false,"website":"https://www.valigator.tech","keybase":null},{"vote":"HMk1qny4fvMnajErxjXG5kT89JKV4cx1PKa9zhQBF9ib","name":"BLOCKSIZE","stakeSol":250292,"delinquent":false,"website":"https://blocksize.info/staking/protocols/solana/","keybase":null},{"vote":"PineDoC593nrX16W8ZLWfF5Evb6otv7fRfZMLjPAHe3","name":"Pine Stake","stakeSol":220140,"delinquent":false,"website":"https://pinestake.com/","keybase":null},{"vote":"B1w6SZcyvjyp6zEyStcc8u9AxXAh2AbYvNzMmP9rRKE9","name":"Nordic Staking 0% fee top APY 3+ years","stakeSol":211412,"delinquent":false,"website":"https://nordicstaking.com","keybase":"nordic_staking"},{"vote":"1KXz4xKV2viJCGpxqnQqdf2J45vQr5USdmtcJLTaHkm","name":"1000X.sh","stakeSol":189075,"delinquent":false,"website":"https://1000x.sh","keybase":"1000xstake"},{"vote":"9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs","name":"Block Logic +MEV +Triton","stakeSol":185683,"delinquent":false,"website":"https://www.blocklogic.net","keybase":"brianlong"},{"vote":"EATzgj3KL3NAkaSKv8JFXPJahGueMbvTdVZj4zD9nQiV","name":"EAT TRIBE","stakeSol":133924,"delinquent":false,"website":"https://eatsol.online","keybase":null},{"vote":"DyDjFYB6i51FMHQvB4eKSwGHmgMxVf1i3FWwANAngqyY","name":"Solana Qubits","stakeSol":111459,"delinquent":false,"website":"https://solanaqubits.com/","keybase":null}]};
+
+(() => {
+  const SGP1 = "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k";
+  const DISINFLATION = "7QJD8MzheHWJLHS39NkoAbFCGFKg5d9QbVviRqD4YExP";
+  const RPC = "https://api.mainnet-beta.solana.com";
+  const THRESH = 0.15;
+  let data = SNAPSHOT;
+  let live = false;
+
+  const $ = id => document.getElementById(id);
+  const fmt = n => (n||0).toLocaleString("en-US");
+  const pct = n => n.toFixed(2) + "%";
+  const short = v => v.slice(0,4) + "…" + v.slice(-4);
+  const solscan = v => `https://solscan.io/account/${v}`;
+
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 2200);
+  }
+  function copy(v) {
+    navigator.clipboard?.writeText(v).then(() => toast("Copied " + short(v)), () => toast("Copy failed"));
+  }
+  window.__copy = copy;
+
+  const state = { q: "", hideDelinq: false, onlyContact: false };
+
+  function contactCell(v) {
+    const bits = [];
+    if (v.website) bits.push(`<a href="${v.website}" target="_blank" rel="noopener">site</a>`);
+    if (v.keybase) bits.push(`<a href="https://keybase.io/${v.keybase}" target="_blank" rel="noopener">keybase</a>`);
+    return bits.length ? bits.join(" · ") : `<span class="none">—</span>`;
+  }
+  function nameCell(v) {
+    const nm = v.name ? `<span class="vname">${v.name}</span>` : `<span class="anon">${short(v.vote)}</span>`;
+    const d = v.delinquent ? `<span class="delinq">DELINQUENT</span>` : "";
+    return nm + d;
+  }
+  function vaCell(v) {
+    return `<span class="va" onclick="__copy('${v.vote}')" title="click to copy">${short(v.vote)}</span>
+            <a href="${solscan(v.vote)}" target="_blank" rel="noopener" title="Solscan" style="margin-left:8px;color:var(--faint)">↗</a>`;
+  }
+  function pass(v) {
+    if (state.hideDelinq && v.delinquent) return false;
+    if (state.onlyContact && !(v.website || v.keybase)) return false;
+    if (state.q && !(v.name||"").toLowerCase().includes(state.q) && !v.vote.toLowerCase().includes(state.q)) return false;
+    return true;
+  }
+
+  function renderOutstanding() {
+    const cur = data.sgp1.supportSol, total = data.totalActiveStakeSol, threshSol = total * THRESH;
+    let cum = cur, crossed = false;
+    const rows = data.outstanding.map((v, i) => {
+      cum += v.stakeSol;
+      const projPct = cum / total * 100;
+      const justCrossed = !crossed && cum >= threshSol;
+      if (justCrossed) crossed = true;
+      return { v, i, projPct, justCrossed };
+    });
+    const visible = rows.filter(r => pass(r.v));
+    let html = `<thead><tr><th class="rank">#</th><th>Validator</th><th class="r">Stake (SOL)</th>
+      <th class="r">% net</th><th class="r">If signed → SGP-1</th><th>Vote account</th><th>Contact</th></tr></thead><tbody>`;
+    for (const r of visible) {
+      if (r.justCrossed) html += `<tr class="crossmark"><td colspan="7"><div class="bar2">↑ these ${r.i+1} sign → 15% THRESHOLD CLEARED</div></td></tr>`;
+      html += `<tr class="${r.justCrossed?'crossed':''}">
+        <td class="rank">${r.i+1}</td>
+        <td>${nameCell(r.v)}</td>
+        <td class="r num">${fmt(r.v.stakeSol)}</td>
+        <td class="r num">${(r.v.stakeSol/data.totalActiveStakeSol*100).toFixed(2)}</td>
+        <td class="r proj"><span class="pct">${r.projPct.toFixed(2)}%</span></td>
+        <td>${vaCell(r.v)}</td>
+        <td class="contact">${contactCell(r.v)}</td></tr>`;
+    }
+    html += `</tbody>`;
+    $("t-out").innerHTML = html;
+    $("c-out").textContent = `${visible.length} shown / ${data.outstanding.length} total`;
+  }
+
+  function renderSimple(id, list, countId, done) {
+    const visible = list.filter(pass);
+    let html = `<thead><tr><th class="rank">#</th>${done?'<th style="width:30px"></th>':''}<th>Validator</th>
+      <th class="r">Stake (SOL)</th><th class="r">% net</th><th>Vote account</th><th>Contact</th></tr></thead><tbody>`;
+    visible.forEach((v, i) => {
+      html += `<tr><td class="rank">${i+1}</td>${done?'<td class="done-ico">✓</td>':''}
+        <td>${nameCell(v)}</td>
+        <td class="r num">${fmt(v.stakeSol)}</td>
+        <td class="r num">${(v.stakeSol/data.totalActiveStakeSol*100).toFixed(2)}</td>
+        <td>${vaCell(v)}</td>
+        <td class="contact">${contactCell(v)}</td></tr>`;
+    });
+    html += `</tbody>`;
+    $(id).innerHTML = html;
+    $(countId).textContent = `${visible.length} shown / ${list.length} total`;
+  }
+
+  function renderKpis() {
+    const s = data.summary, g1 = data.sgp1, total = data.totalActiveStakeSol;
+    const gapPct = Math.max(0, 15 - g1.support), gapSol = Math.max(0, Math.round(total*0.15) - g1.supportSol);
+    $("kpis").innerHTML = `
+      <div class="kpi">
+        <div class="lbl">SGP-1 Support</div>
+        <div class="val">${g1.support}<span class="u">%</span></div>
+        <div class="sub2">${g1.count} sponsors · ${fmt(g1.supportSol)} SOL</div>
+        <div class="bar"><i style="width:${Math.min(100, g1.support/15*100)}%"></i><span class="thresh" style="left:100%"></span></div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Gap to 15% threshold</div>
+        <div class="val">${gapPct.toFixed(2)}<span class="u">%</span></div>
+        <div class="sub2">${fmt(gapSol)} SOL still needed</div>
+      </div>
+      <div class="kpi hero">
+        <div class="lbl">Warm pipeline · outstanding</div>
+        <div class="val">${s.outstandingPct}<span class="u">% of network</span></div>
+        <div class="sub2">${s.outstanding} Disinflation sponsors not yet on SGP-1 · ${fmt(s.outstandingSol)} SOL — enough to cross</div>
+      </div>
+      <div class="kpi">
+        <div class="lbl">Conversion</div>
+        <div class="val">${s.signedBoth}<span class="u">/ ${data.disinflation.count}</span></div>
+        <div class="sub2">Disinflation sponsors who've signed SGP-1</div>
+      </div>`;
+  }
+
+  function renderAll() {
+    $("asof").textContent = new Date(data.generatedAt).toISOString().replace("T"," ").slice(0,16) + " UTC";
+    $("livemode").innerHTML = live ? '<span style="color:var(--signed)">● live</span>' : "snapshot";
+    renderKpis();
+    renderOutstanding();
+    renderSimple("t-both", data.signedBoth, "c-both", true);
+    renderSimple("t-new", data.sgp1Only, "c-new", false);
+    $("fn").innerHTML = `Total active stake ${fmt(data.totalActiveStakeSol)} SOL. Outstanding targets sorted by stake — the "If signed → SGP-1" column is the running projection if every validator down to that row signs; the marked divider is where cumulative support crosses 15%. `
+      + `Names, stake and contacts from on-chain validator-info + vote accounts. Click a vote account to copy. `
+      + (live ? "Live from mainnet RPC." : "Snapshot — click Refresh to pull live (or re-bake).");
+  }
+
+  // ---- live refresh: re-fetch the two proposal accounts, recompute sets ----
+  const ALPHA = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  const PROPOSAL_DISC = [26,94,189,187,116,136,53,33];
+  function b58(bytes){let n=0n;for(const b of bytes)n=n*256n+BigInt(b);let s="";while(n>0n){s=ALPHA[Number(n%58n)]+s;n/=58n;}for(const b of bytes){if(b===0)s="1"+s;else break;}return s;}
+  async function rpc(method, params){
+    const r = await fetch(RPC,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
+    const j = await r.json(); if(j.error) throw new Error(j.error.message); return j.result;
+  }
+  function parse(buf){
+    for(let i=0;i<8;i++) if(buf[i]!==PROPOSAL_DISC[i]) throw new Error("bad");
+    const dv=new DataView(buf.buffer,buf.byteOffset,buf.byteLength);
+    let o=8+32; const tl=dv.getUint32(o,true);o+=4+tl; const dl=dv.getUint32(o,true);o+=4+dl;
+    o+=8*4; const support=dv.getBigUint64(o,true);o+=8; o+=8*3; o+=3+8+4+4;
+    o+=1+(buf[o]===1?32:0); o+=8+8+32; const num=dv.getUint32(o,true);
+    const start=buf.length-num*32; const s=[]; for(let i=0;i<num;i++) s.push(b58(buf.slice(start+i*32,start+i*32+32)));
+    return {support,supporters:s};
+  }
+  async function refresh() {
+    $("refresh").textContent = "↻ …";
+    try {
+      const [a1, a2] = await Promise.all([
+        rpc("getAccountInfo",[SGP1,{encoding:"base64"}]),
+        rpc("getAccountInfo",[DISINFLATION,{encoding:"base64"}]),
+      ]);
+      const p1 = parse(Uint8Array.from(atob(a1.value.data[0]), c=>c.charCodeAt(0)));
+      const p2 = parse(Uint8Array.from(atob(a2.value.data[0]), c=>c.charCodeAt(0)));
+      // known validator info from the baked union (names/stake/contacts)
+      const info = {};
+      for (const v of [...SNAPSHOT.signedBoth, ...SNAPSHOT.outstanding, ...SNAPSHOT.sgp1Only]) info[v.vote] = v;
+      const enrich = vote => info[vote] || { vote, name:null, stakeSol:0, delinquent:false, website:null, keybase:null };
+      const set1 = new Set(p1.supporters), set2 = new Set(p2.supporters);
+      const byStake = (a,b) => b.stakeSol - a.stakeSol;
+      const signedBoth = p2.supporters.filter(v=>set1.has(v)).map(enrich).sort(byStake);
+      const outstanding = p2.supporters.filter(v=>!set1.has(v)).map(enrich).sort(byStake);
+      const sgp1Only = p1.supporters.filter(v=>!set2.has(v)).map(enrich).sort(byStake);
+      const sum = a => Math.round(a.reduce((s,x)=>s+(x.stakeSol||0),0));
+      const total = SNAPSHOT.totalActiveStakeSol;
+      data = {
+        generatedAt: new Date().toISOString(), totalActiveStakeSol: total,
+        sgp1: { support:+(Number(p1.support)/1e9/total*100).toFixed(2), supportSol:Math.round(Number(p1.support)/1e9), count:p1.supporters.length },
+        disinflation: SNAPSHOT.disinflation,
+        summary: {
+          signedBoth: signedBoth.length, signedBothSol: sum(signedBoth),
+          outstanding: outstanding.length, outstandingSol: sum(outstanding), outstandingPct:+(sum(outstanding)/total*100).toFixed(2),
+          sgp1Only: sgp1Only.length, sgp1OnlySol: sum(sgp1Only),
+        },
+        signedBoth, outstanding, sgp1Only,
+      };
+      live = true; renderAll(); toast("Live data updated");
+    } catch (e) {
+      toast("Live RPC unavailable here — showing snapshot");
+    } finally {
+      $("refresh").textContent = "↻ Refresh";
+    }
+  }
+
+  // wire controls
+  $("search").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); renderAll(); });
+  $("f-delinq").addEventListener("click", function(){ this.classList.toggle("on"); state.hideDelinq = !state.hideDelinq; renderAll(); });
+  $("f-contact").addEventListener("click", function(){ this.classList.toggle("on"); state.onlyContact = !state.onlyContact; renderAll(); });
+  $("refresh").addEventListener("click", refresh);
+
+  renderAll();
+  refresh(); // attempt live on load; silently keeps snapshot if blocked
+})();
+</script>
+</html>
