@@ -473,13 +473,16 @@ svmgov -k /path/to/validator-identity.json \
 
   // Baked roster from the repo (refreshed by GitHub Action; includes names).
   async function loadBaseline() {
+    // Cache-bust: GitHub Pages sets max-age=600 on data files and its CDN edges
+    // cache independently, so a unique query per fetch guarantees the freshest copy.
+    const bust = "?t=" + Date.now();
     try {
-      const cfg = await (await fetch("/data/config.json", { cache: "no-store" })).json();
+      const cfg = await (await fetch("/data/config.json" + bust, { cache: "no-store" })).json();
       if (Array.isArray(cfg.rpcs) && cfg.rpcs.length) RPCS = cfg.rpcs;
       if (!QP_ID && cfg.proposalId) PROPOSAL_ID = cfg.proposalId;
     } catch (e) { /* not served from the site — artifact preview */ }
     try {
-      const base = await (await fetch("/data/signers.json", { cache: "no-store" })).json();
+      const base = await (await fetch("/data/signers.json" + bust, { cache: "no-store" })).json();
       if (base.signers) for (const s of base.signers) if (s.name) nameByVote[s.vote] = s.name;
       if (base.signers?.length && (!QP_ID || QP_ID === base.proposalId)) {
         renderLedger(
