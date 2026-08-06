@@ -1,6 +1,6 @@
 {
  "proposalId": "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k",
- "updatedAt": "2026-08-06T09:08:24.281Z",
+ "updatedAt": "2026-08-06T11:31:02.508Z",
  "phase": "gathering",
  "signers": [
   {
@@ -156,9 +156,23 @@
    "identity": "BeaCHioStqCEFDFxKwAEzyrUPYxqnBPhJ98gDKeEiTPb",
    "name": "Solana Beach Validator",
    "stakeSol": 579407
+  },
+  {
+   "rank": 23,
+   "vote": "6q1VNp8Vy2Go12vb8CwbjUqqj2SXr2JYftJRWs71sW23",
+   "identity": "mineL1YNwcRnxN93B2sX6q22R11WfRqxnY4NBV8KfFY",
+   "name": "Exo Tech",
+   "stakeSol": 550883
+  },
+  {
+   "rank": 24,
+   "vote": "FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ",
+   "identity": "FACb6bbTDRBHCK999V8ox8jga5JBnt1r3vvzmAYAMv2o",
+   "name": "Lantern",
+   "stakeSol": 278418
   }
  ],
  "title": "SGP-0001: The Solana Constitution",
- "supportLamports": "5840900645416968",
- "totalStakeLamports": "434423482977126600"
+ "supportLamports": "6669969194796086",
+ "totalStakeLamports": "434423482977126900"
 }
