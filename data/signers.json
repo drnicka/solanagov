@@ -1,6 +1,6 @@
 {
  "proposalId": "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k",
- "updatedAt": "2026-08-06T11:31:02.508Z",
+ "updatedAt": "2026-08-06T13:13:29.533Z",
  "phase": "gathering",
  "signers": [
   {
@@ -170,9 +170,163 @@
    "identity": "FACb6bbTDRBHCK999V8ox8jga5JBnt1r3vvzmAYAMv2o",
    "name": "Lantern",
    "stakeSol": 278418
+  },
+  {
+   "rank": 25,
+   "vote": "HMk1qny4fvMnajErxjXG5kT89JKV4cx1PKa9zhQBF9ib",
+   "identity": "7VZM7YHcX73TpGoXDeBu61g4QKC86GwAEnew8dA7Y2xn",
+   "name": "BLOCKSIZE",
+   "stakeSol": 250292
+  },
+  {
+   "rank": 26,
+   "vote": "PineDoC593nrX16W8ZLWfF5Evb6otv7fRfZMLjPAHe3",
+   "identity": "Pid6HQnMCFb9izqX9i7X6ePdUPieGmjHoPxC1Jfooix",
+   "name": "Pine Stake",
+   "stakeSol": 220140
+  },
+  {
+   "rank": 27,
+   "vote": "86Sw9R6ynPmXnHfwUWinXtq1QoF2KHesfQQyZG5r8sXo",
+   "identity": "AfZTWYoFQbzqCMmUBTD7XwxFvjob1FVyCvkaXRryxtKc",
+   "name": "Digital Energy",
+   "stakeSol": 298644
+  },
+  {
+   "rank": 28,
+   "vote": "6tgtejPHUHR1pECzXqQT8EHZqnKCWZFSqdZXDyBaKe3b",
+   "identity": "2oHUYyW2PU9VJh4XBs5TbGgzdernunvGqyKth3kxW4ns",
+   "name": null,
+   "stakeSol": 280746
+  },
+  {
+   "rank": 29,
+   "vote": "Bkskrv38Kn7zJR5mvmbCDGn2M4Jyhzt2ZqwQXV6rYnXa",
+   "identity": "AicQr2zCWBLiBwt2r6o7iTemmtyE7q5pTKyuuupbXEQA",
+   "name": null,
+   "stakeSol": 749068
+  },
+  {
+   "rank": 30,
+   "vote": "6jzDwKeR21EFHwaRgZMefMxJ9D2vnQRqfYxkpUuJppPh",
+   "identity": "BUv44cVtsdvU9z2BfFGk6s5JZZWrmVnq5qCaii5ARyyB",
+   "name": null,
+   "stakeSol": 1937410
+  },
+  {
+   "rank": 31,
+   "vote": "9GJmEHGom9eWo4np4L5vC6b6ri1Df2xN8KFoWixvD1Bs",
+   "identity": "DDnAqxJVFo2GVTujibHt5cjevHMSE9bo8HJaydHoshdp",
+   "name": "Block Logic +MEV +Triton",
+   "stakeSol": 185683
+  },
+  {
+   "rank": 32,
+   "vote": "BkSS8kGUNcQkTgEKMmBhHxGVLdzw43EAzDYpZqyyxFrT",
+   "identity": "FzQqaDStQQHs52YKeCnDovwSqvyZBCgs2kJcmvoFZwaS",
+   "name": null,
+   "stakeSol": 1881605
+  },
+  {
+   "rank": 33,
+   "vote": "Eqwa3Jo6aa4ugEbPZNcDQyBfVU7dSz3VR8CcDYRrPyh4",
+   "identity": "G3a3iYZKNLbivothF3twqcaTCEvoPb9uJ2bFc9DNKkBQ",
+   "name": null,
+   "stakeSol": 1324631
+  },
+  {
+   "rank": 34,
+   "vote": "7jPqpHuN5v59dtBom2tjmYEfi6WaM4sFtJeTD6fzhcdS",
+   "identity": "GYx8kpp7SsRwtQEEsGQjAxb4hFMMmT91kFJuDeky3YGQ",
+   "name": null,
+   "stakeSol": 1461029
+  },
+  {
+   "rank": 35,
+   "vote": "HxYHGzR58gyf6c4JAX85eK8GVuaZU2zne4be82Lq9SBQ",
+   "identity": "22rU5yUmdVThrkoPieVNphqEyAtMQKmZxjwcD8v4bJDU",
+   "name": null,
+   "stakeSol": 2322629
+  },
+  {
+   "rank": 36,
+   "vote": "BU3ZgGBXFJwNTrN6VUJ88k9SJ71SyWfBJTabYqRErm4F",
+   "identity": "2GUnfxZavKoPfS9s3VSEjaWDzB3vNf5RojUhprCS1rSx",
+   "name": null,
+   "stakeSol": 2500000
+  },
+  {
+   "rank": 37,
+   "vote": "74pfDmYto6aAqCzFH1mNJ8NxF7A4LQ4cXkipGwgjY39u",
+   "identity": "3JotfSFPaod4KVK7nj7ULvcq5PjUBdZNVGracNkJNhrt",
+   "name": null,
+   "stakeSol": 1837000
+  },
+  {
+   "rank": 38,
+   "vote": "iZADA4YKVRJZJaDUV3j79DzyK4VJkK3DGTfvvqvbC1K",
+   "identity": "5EhGYUyQNrxgUbuYF4vbL2SZDT6RMfhq3yjeyevvULeC",
+   "name": null,
+   "stakeSol": 3598006
+  },
+  {
+   "rank": 39,
+   "vote": "8mHUDJjzPo2AwJp8SHKmG9rk9ftWTp7UysqYz36cMpJe",
+   "identity": "76rcGHdPvgs8G1XrzCXUTWtwgT59AFDvpB4VbTS2TBBJ",
+   "name": null,
+   "stakeSol": 2502383
+  },
+  {
+   "rank": 40,
+   "vote": "33hurzEz6aEnzfESL6pnNyR6DCgcKzssT1pwSzDCBTRQ",
+   "identity": "Aw5wEMXhbygFLR7jHtHpih8QvxVBGAMTqsQ2SjWPk1ex",
+   "name": null,
+   "stakeSol": 2500000
+  },
+  {
+   "rank": 41,
+   "vote": "JDMq8hxZnad2smKLGkFbfg8zVMZHKQcMugD4tMR9u2da",
+   "identity": "DUND26mEDfFeaPsVof3YvbXDRvpuQX7HMUJrLgEWzYw4",
+   "name": null,
+   "stakeSol": 2500000
+  },
+  {
+   "rank": 42,
+   "vote": "oixpqSNX7CKWHw93ViA8u1CcLzZXDmacKJjV4AvxMZE",
+   "identity": "GQzMeEMwAR44ugoNCifTb5NdRKos1GduDUPeNh6AgV46",
+   "name": null,
+   "stakeSol": 2502396
+  },
+  {
+   "rank": 43,
+   "vote": "HhYEE3dAShc3772wEiy73XDYnLjVxyBL8eAWKyRcF14y",
+   "identity": "HbidP4hpQdwhkzrxder3x3VNPt6DQnE25gFG46napD2p",
+   "name": null,
+   "stakeSol": 1835665
+  },
+  {
+   "rank": 44,
+   "vote": "CxFH1pqJnEmyaE4wEwqdqMKpQMpkmdaMxhS7SzpHokA8",
+   "identity": "HnfPZDrbJFooiP9vvgWrjx3baXVNAZCgisT58gyMCgML",
+   "name": null,
+   "stakeSol": 2182666
+  },
+  {
+   "rank": 45,
+   "vote": "GREEDkpTvpKzcGvBu9qd36yk6BfjTWPShB67gLWuixMv",
+   "identity": "GREEDkgav1ox1jYyd9Anv6exLqKV2vYnxMw5prGwmNKc",
+   "name": "GREED Academy - funding education",
+   "stakeSol": 549615
+  },
+  {
+   "rank": 46,
+   "vote": "J2nUHEAgZFRyuJbFjdqPrAa9gyWDuc7hErtDQHPhsYRp",
+   "identity": "7GkMBmtrTZz8QbjSe1sXvAUtz7Pp42SQxfT5ymmJD4We",
+   "name": "Phantom Validator",
+   "stakeSol": 417096
   }
  ],
  "title": "SGP-0001: The Solana Constitution",
- "supportLamports": "6669969194796086",
- "totalStakeLamports": "434423482977126900"
+ "supportLamports": "40506136819837967",
+ "totalStakeLamports": "434423482977126340"
 }
