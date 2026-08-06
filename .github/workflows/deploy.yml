@@ -29,3 +29,5 @@ jobs:
           path: "."
       - id: dep
         uses: actions/deploy-pages@v4
+
+# deploy pipeline via GitHub Actions
