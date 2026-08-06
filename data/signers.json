@@ -1,6 +1,73 @@
 {
- "proposalId": null,
- "updatedAt": "2026-08-06T06:13:42.509Z",
- "phase": "awaiting",
- "signers": []
+ "proposalId": "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k",
+ "updatedAt": "2026-08-06T07:10:56.226Z",
+ "phase": "gathering",
+ "signers": [
+  {
+   "rank": 1,
+   "vote": "J1to1yufRnoWn81KYg1XkTWzmKjnYSnmE2VY8DGUJ9Qv",
+   "identity": "2X5yarNUWGyyiJDtRoPATvJYeNecvWG7zCkBrY2J1to1",
+   "name": null,
+   "stakeSol": 557745
+  },
+  {
+   "rank": 2,
+   "vote": "nateBZg7oHVPLB2samBLkKvfzedU3ALZBexMFPMKjn1",
+   "identity": "nateKhsYkrVc992UuTfAhEEFQqr2zQfpGg9RafNkxdC",
+   "name": "Epoch.Day",
+   "stakeSol": 109651
+  },
+  {
+   "rank": 3,
+   "vote": "CooLbbZy5Xmdt7DiHPQ3ss2uRXawnTXXVgpMS8E8jDzr",
+   "identity": "CaveyttUBTKttncu1e4RF814XjuoGfYv8cEsiKGDNCPX",
+   "name": "Cavey Cool",
+   "stakeSol": 796885
+  },
+  {
+   "rank": 4,
+   "vote": "EATzgj3KL3NAkaSKv8JFXPJahGueMbvTdVZj4zD9nQiV",
+   "identity": "EATpCzQNs8BzZh1mx1hXMAJm3o1MLXakTXr4UEmcsY7f",
+   "name": "EAT TRIBE",
+   "stakeSol": 133924
+  },
+  {
+   "rank": 5,
+   "vote": "gaToR246dheK1DGAMEqxMdBJZwU4qFyt7DzhSwAHFWF",
+   "identity": "vALigXFg9wnnhVHN16vNxHxXtAXiBv5QjAE6udoniBY",
+   "name": "Valigator Open",
+   "stakeSol": 258918
+  },
+  {
+   "rank": 6,
+   "vote": "6JfBwvcz5QUKQJ37BMKTLrf968DDJBtwoZLw19aHwFtQ",
+   "identity": "qZMH9GWnnBkx7aM1h98iKSv2Lz5N78nwNSocAxDQrbP",
+   "name": "Spectrum Staking",
+   "stakeSol": 274069
+  },
+  {
+   "rank": 7,
+   "vote": "48oxpSHQkM4sdXUY9NQ8KnEtebzZbyk8uUT7JRdVQNuf",
+   "identity": "9gFxqsXbFyrKXUkqpAatonn47uYZ7sEZSnMxhzQoXrUJ",
+   "name": "LUX8 Validator",
+   "stakeSol": 302351
+  },
+  {
+   "rank": 8,
+   "vote": "GMpKrAwQ9oa4sJqEYQezLr8Z2TUAU72tXD4iMyfoJjbh",
+   "identity": "5XKJwdKB2Hs7pkEXzifAysjSk6q7Rt6k5KfHwmAMPtoQ",
+   "name": "Moonlet",
+   "stakeSol": 179129
+  },
+  {
+   "rank": 9,
+   "vote": "1KXz4xKV2viJCGpxqnQqdf2J45vQr5USdmtcJLTaHkm",
+   "identity": "1KXvrkPXwkGF6NK1zyzVuJqbXfpenPVPP6hoiK9bsK3",
+   "name": "1000X.sh",
+   "stakeSol": 189075
+  }
+ ],
+ "title": "SGP-0001: The Solana Constitution",
+ "supportLamports": "2800939144543531",
+ "totalStakeLamports": "434423482977126700"
 }

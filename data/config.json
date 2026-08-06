@@ -1,4 +1,6 @@
 {
-  "proposalId": null,
-  "rpcs": ["https://api.mainnet-beta.solana.com"]
+  "proposalId": "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k",
+  "rpcs": [
+    "https://api.mainnet-beta.solana.com"
+  ]
 }
