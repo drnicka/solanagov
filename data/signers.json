@@ -1,6 +1,6 @@
 {
  "proposalId": "4aFA8K65zYZjmx16qaXhMLW9QY7URRvwyk4KQo2zLz8k",
- "updatedAt": "2026-08-06T07:10:56.226Z",
+ "updatedAt": "2026-08-06T09:08:24.281Z",
  "phase": "gathering",
  "signers": [
   {
@@ -65,9 +65,100 @@
    "identity": "1KXvrkPXwkGF6NK1zyzVuJqbXfpenPVPP6hoiK9bsK3",
    "name": "1000X.sh",
    "stakeSol": 189075
+  },
+  {
+   "rank": 10,
+   "vote": "B1w6SZcyvjyp6zEyStcc8u9AxXAh2AbYvNzMmP9rRKE9",
+   "identity": "AsMpvJ3DZ2Ydu1WTRMAyMH4QjSLiUG39rKzfzvtE1bWr",
+   "name": "Nordic Staking 0% fee top APY 3+ years",
+   "stakeSol": 211412
+  },
+  {
+   "rank": 11,
+   "vote": "adraBKLNY3DL3pg6SJRDYiMA8BsznaWpUdE42X41gbP",
+   "identity": "adramSYKBv1yHoZTub4kepcmF5LybPxwyJcsz4fpfi7",
+   "name": "Adrastea Validator",
+   "stakeSol": 261226
+  },
+  {
+   "rank": 12,
+   "vote": "EBVj3uwSKZpqEb1K267JaPxDQhULVqCy6hYeQqjsPh81",
+   "identity": "43Am3PKFeo9cACpqYL5Sk95rpVdxLw3Mc22PqRqZXEW2",
+   "name": "Titan Analytics",
+   "stakeSol": 297690
+  },
+  {
+   "rank": 13,
+   "vote": "soLStAckuvkHtNzHF1cwmeSRG1FzVxKxwsdWZ1yrHrz",
+   "identity": "soLStaCk5TiGCpeLKa9Fvv6f5JQGMa6S3uhLh826e9N",
+   "name": "SolStack by Corvus Labs",
+   "stakeSol": 183486
+  },
+  {
+   "rank": 14,
+   "vote": "1Dadio3JRvpEjY6iSmXmhbGy9RiU8Nxh2GmoVbNusbE",
+   "identity": "FyrwfMaomErzqrFUXMjCJ7mA4u81DsiDdrzC3MJD6d4j",
+   "name": "1dad | Solfege",
+   "stakeSol": 340238
+  },
+  {
+   "rank": 15,
+   "vote": "DyDjFYB6i51FMHQvB4eKSwGHmgMxVf1i3FWwANAngqyY",
+   "identity": "EAW9vxqogvdPNapq7QTDpiVTHK6o7begUhPVnf854VTc",
+   "name": "Solana Qubits",
+   "stakeSol": 111459
+  },
+  {
+   "rank": 16,
+   "vote": "mesh3Px7WMi7Dkxke4ZZBULoKHM6sp37wKtg4DwPqPY",
+   "identity": "meshRrDTME9cL2FSQ9E56EncfkZ7vL8apwcCFsw3o6Y",
+   "name": "Mesh Validator",
+   "stakeSol": 123083
+  },
+  {
+   "rank": 17,
+   "vote": "gridZ5cMHjWGktAQt6o36NtF7XSv19nJBrW83zmo7BM",
+   "identity": "gridqZmeBcsUKT2Mv4M9YFHFN3tVLFb2TCtTcLD1cAd",
+   "name": "Grid Systems",
+   "stakeSol": 271413
+  },
+  {
+   "rank": 18,
+   "vote": "StepeLdhJ2znRjHcZdjwMWsC4nTRURNKQY8Nca82LJp",
+   "identity": "sTepQGoReJq2tBKStL19DT6nnGHcGiAvFjyYaokLyuM",
+   "name": "Step Finance",
+   "stakeSol": 210650
+  },
+  {
+   "rank": 19,
+   "vote": "bookLxG3LkSmt4htJ1x9zPw6E34RRMAi7sUn5mM3CNN",
+   "identity": "bookoVmqw4QjVj5BbkFacouadx9M7816wyRkfM7A5Lo",
+   "name": "The Library",
+   "stakeSol": 149613
+  },
+  {
+   "rank": 20,
+   "vote": "B1rsc6jv3RsFpkak8qvJN3PfGYSg9E3Uw1joaV1EoiFj",
+   "identity": "revtecFsGSRCdF29atQvchSXrjwBesA9vSisD4fyH5K",
+   "name": "RevTec | 100% Block Reward",
+   "stakeSol": 112292
+  },
+  {
+   "rank": 21,
+   "vote": "FCvNkHa4U3yh7AXWGGL2jWLWiSRouR8EtzY5WVTHKTHa",
+   "identity": "9pBHfuE19q7PRbupJf8CZAMwv6RHjasdyMN9U9du7Nx2",
+   "name": "H2O Nodes💧",
+   "stakeSol": 188824
+  },
+  {
+   "rank": 22,
+   "vote": "BeachiopjxQxL7CaHNSZsynApiZCKx9QFVtcWNz3jDBo",
+   "identity": "BeaCHioStqCEFDFxKwAEzyrUPYxqnBPhJ98gDKeEiTPb",
+   "name": "Solana Beach Validator",
+   "stakeSol": 579407
   }
  ],
  "title": "SGP-0001: The Solana Constitution",
- "supportLamports": "2800939144543531",
- "totalStakeLamports": "434423482977126700"
+ "supportLamports": "5840900645416968",
+ "totalStakeLamports": "434423482977126600"
 }
