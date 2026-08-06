@@ -150,10 +150,13 @@
 
   .ledger { padding: 40px 0 30px; }
   .sigs {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 34px 56px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px 44px;
     padding: 12px 0;
+    /* the signature field breaks out wider than the 700px document body */
+    width: min(1060px, 94vw); margin-left: 50%; transform: translateX(-50%);
   }
-  @media (max-width: 620px) { .sigs { grid-template-columns: 1fr; } }
+  @media (max-width: 900px) { .sigs { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 600px) { .sigs { grid-template-columns: 1fr; width: 100%; margin-left: 0; transform: none; } }
   .sig { border-bottom: 1px solid var(--rule-strong); padding: 4px 2px 8px; min-height: 74px;
          display: flex; align-items: flex-end; gap: 14px; position: relative; }
   .sig .rank {
