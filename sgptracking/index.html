@@ -302,40 +302,18 @@ const SNAPSHOT = {"generatedAt":"2026-08-06T13:17:58.364Z","totalActiveStakeSol"
     const start=buf.length-num*32; const s=[]; for(let i=0;i<num;i++) s.push(b58(buf.slice(start+i*32,start+i*32+32)));
     return {support,supporters:s};
   }
+  // Data comes from a same-origin file the deploy Action rebakes every few
+  // minutes — one server-side RPC caller, so no per-visitor rate limiting.
   async function refresh() {
     $("refresh").textContent = "↻ …";
     try {
-      const [a1, a2] = await Promise.all([
-        rpc("getAccountInfo",[SGP1,{encoding:"base64"}]),
-        rpc("getAccountInfo",[DISINFLATION,{encoding:"base64"}]),
-      ]);
-      const p1 = parse(Uint8Array.from(atob(a1.value.data[0]), c=>c.charCodeAt(0)));
-      const p2 = parse(Uint8Array.from(atob(a2.value.data[0]), c=>c.charCodeAt(0)));
-      // known validator info from the baked union (names/stake/contacts)
-      const info = {};
-      for (const v of [...SNAPSHOT.signedBoth, ...SNAPSHOT.outstanding, ...SNAPSHOT.sgp1Only]) info[v.vote] = v;
-      const enrich = vote => info[vote] || { vote, name:null, stakeSol:0, delinquent:false, website:null, keybase:null };
-      const set1 = new Set(p1.supporters), set2 = new Set(p2.supporters);
-      const byStake = (a,b) => b.stakeSol - a.stakeSol;
-      const signedBoth = p2.supporters.filter(v=>set1.has(v)).map(enrich).sort(byStake);
-      const outstanding = p2.supporters.filter(v=>!set1.has(v)).map(enrich).sort(byStake);
-      const sgp1Only = p1.supporters.filter(v=>!set2.has(v)).map(enrich).sort(byStake);
-      const sum = a => Math.round(a.reduce((s,x)=>s+(x.stakeSol||0),0));
-      const total = SNAPSHOT.totalActiveStakeSol;
-      data = {
-        generatedAt: new Date().toISOString(), totalActiveStakeSol: total,
-        sgp1: { support:+(Number(p1.support)/1e9/total*100).toFixed(2), supportSol:Math.round(Number(p1.support)/1e9), count:p1.supporters.length },
-        disinflation: SNAPSHOT.disinflation,
-        summary: {
-          signedBoth: signedBoth.length, signedBothSol: sum(signedBoth),
-          outstanding: outstanding.length, outstandingSol: sum(outstanding), outstandingPct:+(sum(outstanding)/total*100).toFixed(2),
-          sgp1Only: sgp1Only.length, sgp1OnlySol: sum(sgp1Only),
-        },
-        signedBoth, outstanding, sgp1Only,
-      };
-      live = true; renderAll(); toast("Live data updated");
+      const fresh = await (await fetch("/data/tracker.json?t=" + Date.now(), { cache: "no-store" })).json();
+      if (fresh && Array.isArray(fresh.outstanding)) {
+        data = fresh; live = true; renderAll(); toast("Updated");
+      } else throw new Error("no data");
     } catch (e) {
-      toast("Live RPC unavailable here — showing snapshot");
+      // no baked file (e.g. artifact preview) — keep the built-in snapshot
+      toast("Live data file not available here — showing snapshot");
     } finally {
       $("refresh").textContent = "↻ Refresh";
     }

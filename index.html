@@ -482,45 +482,17 @@ svmgov -k /path/to/validator-identity.json \
         renderLedger(
           base.signers.map(s => ({ vote: s.vote, name: s.name, stakeSOL: s.stakeSol })),
           { phase: base.phase, supportLamports: base.supportLamports,
-            totalStake: Number(base.totalStakeLamports || 0), live: false });
+            totalStake: Number(base.totalStakeLamports || 0), live: true });
       }
     } catch (e) { /* no baked roster yet */ }
   }
 
-  // Live top-up straight from the chain (catches signatures between bakes).
-  async function refresh() {
-    if (!PROPOSAL_ID) return;
-    try {
-      const [acct, votes] = await Promise.all([
-        rpc("getAccountInfo", [PROPOSAL_ID, { encoding: "base64" }]),
-        rpc("getVoteAccounts", [{ commitment: "confirmed" }]),
-      ]);
-      if (!acct || !acct.value) return;
-
-      const raw = Uint8Array.from(atob(acct.value.data[0]), c => c.charCodeAt(0));
-      const p = parseProposal(raw);
-
-      const info = {};
-      let totalStake = 0;
-      for (const v of [...votes.current, ...votes.delinquent]) {
-        info[v.votePubkey] = v;
-        totalStake += v.activatedStake;
-      }
-
-      renderLedger(
-        p.supporters.map(vote => ({
-          vote,
-          name: nameByVote[vote] || null,
-          stakeSOL: info[vote] ? info[vote].activatedStake / 1e9 : null,
-        })),
-        { phase: p.finalized ? "finalized" : p.voting ? "sponsored" : "gathering",
-          supportLamports: p.supportLamports, totalStake, live: true });
-    } catch (e) { /* keep whatever is rendered (baseline or empty state) */ }
-  }
-
+  // The ledger is served from a same-origin file refreshed server-side by the
+  // deploy Action every few minutes — no per-visitor RPC (which the public
+  // endpoint rate-limits). Re-fetching the static file is cheap and reliable.
   renderEmpty("The ledger awaits the proposal's creation on-chain.");
-  loadBaseline().then(refresh);
-  setInterval(refresh, 60_000);
+  loadBaseline();
+  setInterval(loadBaseline, 60_000);
 })();
 </script>
 </html>
