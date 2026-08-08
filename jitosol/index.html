@@ -352,7 +352,7 @@
     <p class="lede">Solana is activating network-level governance, and JIP-30 aims to ensure that JitoSOL has
     better than governance parity to staked SOL. As per the JIP-30 directive, a voting solution for JitoSOL
     has been constructed. If turnout is greater than <strong>10% of JitoSOL TVL</strong>, the Jito stake pool
-    votes with <strong>its entire stake</strong> on-chain, split to mirror the ballots actually cast.
+    votes with <strong>its entire stake</strong> on-chain as a single bloc for the outcome the poll chooses.
     Voters direct the whole pool's weight.</p>
 
     <div class="stat-row">
@@ -407,7 +407,7 @@
         <div class="tag">Layer 2 · Binding vote</div>
         <h3>The pool votes on-chain</h3>
         <p>The stake pool manager casts the pool's <strong>full stake</strong> on
-        <code class="inline">svmgov</code>, split in basis points to mirror the poll.</p>
+        <code class="inline">svmgov</code> as a bloc vote for the poll's winning outcome.</p>
       </div>
     </div>
 
@@ -432,9 +432,9 @@
       </div></div>
       <div class="step"><div class="idx">04</div><div>
         <h3>The pool casts the binding vote</h3>
-        <p>If turnout reached 10% of TVL, the manager splits the pool's entire stake proportionally to the poll.
-        A 63% Yes / 35% No / 2% Abstain result becomes
-        <code class="inline">cast_vote(6300, 3500, 200)</code> — not winner-take-all, a mirror.</p>
+        <p>If turnout reached 10% of TVL, the manager casts the pool's entire stake as a single bloc for the
+        poll's winning outcome. A Yes majority means the whole pool votes For —
+        <code class="inline">cast_vote(10000, 0, 0)</code>, winner-takes-all.</p>
       </div></div>
     </div>
   </section>
@@ -443,11 +443,11 @@
     <p class="kicker">The governance uplift</p>
     <h2>Show up, and your vote counts for more.</h2>
     <div class="prose">
-      <p>The pool votes <strong>100% of its stake</strong>, but splits it to mirror only the ballots cast.
-      So each voting JitoSOL carries the weight of itself <em>plus its share of every non-voter's stake</em>.
-      Your effective multiplier is simply <strong>1 ÷ turnout</strong>: at the 10% threshold that's 10×;
-      at full turnout it's exactly the 1× a native staker gets. Participation is never penalized —
-      only amplified.</p>
+      <p>The pool casts <strong>100% of its stake</strong> as a bloc for the outcome the poll chooses. So the
+      holders who turn out don't just vote their own JitoSOL — they decide how the entire pool's stake is cast.
+      The fewer who vote, the more each voter swings: your effective influence is <strong>1 ÷ turnout</strong> —
+      at the 10% threshold that's 10×, at full turnout the 1× a native staker gets. Participation is never
+      penalized — only amplified.</p>
     </div>
 
     <div class="lab">
@@ -528,8 +528,8 @@
     <ul class="verify">
       <li>The <strong>snapshot slot and sha256 hash</strong> of the full balance set — verify your own weight was counted.</li>
       <li>The <strong>live Realms tally</strong> — the poll runs on public, on-chain infrastructure.</li>
-      <li>The <strong>tally file and its hash</strong>, plus the exact basis-point math from poll result to <code class="inline">cast_vote</code>.</li>
-      <li>The <strong>on-chain vote transaction</strong> from the pool manager — anyone can check it mirrors the poll.</li>
+      <li>The <strong>tally file and its hash</strong>, plus the mapping from poll result to the pool's <code class="inline">cast_vote</code> bloc.</li>
+      <li>The <strong>on-chain vote transaction</strong> from the pool manager — anyone can check it matches the poll's outcome.</li>
       <li>Timing is guaranteed by construction: claim deadline ≤ poll close ≤ the <code class="inline">svmgov</code> voting deadline.</li>
     </ul>
   </section>
@@ -578,15 +578,9 @@
       <div class="step"><div class="idx">04</div><div>
         <h3>The signal passes through</h3>
         <p>The delegate's vote joins the aggregate JitoSOL tally alongside every direct and delegated holder.
-        If total turnout clears 10% of TVL, the pool casts its entire stake on-chain, split to mirror the
-        combined result.</p>
+        If total turnout clears 10% of TVL, the pool casts its entire stake on-chain as a bloc for the
+        combined result's winning outcome.</p>
       </div></div>
-    </div>
-    <div class="callout">
-      <p><span class="t">Why this matters</span>
-      DeFi holds the single largest block of JitoSOL outside of direct wallets. Bringing those positions in
-      through DeFi delegates is the difference between straining to reach the 10% quorum and clearing it
-      comfortably. If a protocol does not nominate, its locked JitoSOL simply sits the vote out.</p>
     </div>
   </section>
 
@@ -612,10 +606,11 @@
       </details>
       <details>
         <summary>What if my JitoSOL is in a DeFi protocol at the snapshot?</summary>
-        <p>JitoSOL held in program-owned accounts (lending markets, LP positions) is excluded in v1 —
-        attributing wrapped balances to end users reliably is an open engineering problem that JIP-30
-        flags for future iterations. If governance participation matters to you, hold in your own wallet
-        across snapshot windows.</p>
+        <p>It can still be voted — through a DeFi delegate. JitoSOL held inside a protocol (lending markets,
+        LPs, vaults) is held by the protocol, not your wallet, so it can't vote directly. Instead the protocol
+        can vote its locked position itself or appoint a proven ecosystem delegate to vote on its behalf — see
+        the <strong>DeFi Delegates</strong> section above. If you'd rather vote it yourself, hold JitoSOL in
+        your own wallet across the snapshot window.</p>
       </details>
       <details>
         <summary>What happens if turnout misses 10%?</summary>
@@ -655,7 +650,7 @@
     <p>Draft explainer for JIP-30 review. Holder counts and cost figures are from the JitoSOL governance
     design docs (June 2026); mechanism parameters are subject to the governance subDAO's final engineering
     decisions, and it is anticipated that the governance mechanism will evolve and improve over time.
-    The uplift multiplier assumes the pool casts its full stake, mirrored proportionally to the poll.</p>
+    The uplift assumes the pool casts its full stake as a bloc for the poll's winning outcome.</p>
   </footer>
 
 </div>
@@ -762,7 +757,7 @@
       big.innerHTML = `At <span class="hl">${t}%</span> turnout, your ` +
         `<span class="hl">${fmt(amt)}</span> JitoSOL votes with the weight of ` +
         `<span class="hl">${fmt(amt * k)}</span> staked SOL — a <span class="hl">${k.toFixed(1)}×</span> uplift.`;
-      sub.textContent = "The pool casts 100% of its stake, mirrored to the ballots cast — voters direct the non-voters’ share.";
+      sub.textContent = "The pool casts 100% of its stake as a bloc for the winning side — the holders who turn out direct the entire pool’s weight.";
     }
   }
   slider.addEventListener("input", update);
