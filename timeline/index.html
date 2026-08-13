@@ -188,9 +188,9 @@
     This page maps every epoch from now to results — including how the JitoSOL holder poll and the Jito DAO
     security council thread through the schedule so the stake pool votes on time.</p>
     <div class="stat-row">
-      <div class="stat"><div class="n"><em>Aug 23–29</em></div><div class="l">network voting — SGP-0003 + Double Disinflation (e1021–1023); SGP-0001 follows Aug 25 – Sep 1</div></div>
-      <div class="stat"><div class="n">Mon Aug 10</div><div class="l">JitoSOL snapshot + voting-token distribution; holder poll Aug 15–21 (e1017–1019)</div></div>
-      <div class="stat"><div class="n">Aug 29 / Sep 1</div><div class="l">results — locked cohort Aug 29 22:00 UTC (e1024); SGP-0001 Sep 1 (e1025)</div></div>
+      <div class="stat"><div class="n"><em>Aug 23–29</em></div><div class="l">network voting — all three SGPs together, e1021–1023</div></div>
+      <div class="stat"><div class="n">Live now</div><div class="l">JitoSOL holder poll on Realms — e1016–1018 (13–19 Aug), 3 epochs, 10% quorum</div></div>
+      <div class="stat"><div class="n">Aug 29</div><div class="l">results — all three finalize e1024, 29 Aug 22:00 UTC</div></div>
     </div>
   </header>
 
@@ -198,8 +198,10 @@
     <p class="kicker">Epochs 1012–1025</p>
     <h2>The voting timeline</h2>
     <div class="prose">
-      <p>Epochs run ~2.1 days each. The two locked proposals crossed the 15% support threshold in epoch 1012;
-      SGP-0001 is shown crossing in epoch 1013, which puts its voting window one epoch behind the cohort.</p>
+      <p>Epochs run ~2.1 days each. All three proposals crossed the 15% support threshold in epoch 1012, so
+      they share one schedule: Review through e1019, NCN snapshot e1020, network voting e1021–1023. The JitoSOL
+      holder poll is live now (e1016–1018) and its result feeds the pool's bloc vote before the network window
+      opens.</p>
     </div>
 
     <div class="tl-scroll">
@@ -233,26 +235,26 @@
 
         <!-- sgp-0001 -->
         <div class="lane-label"><span class="t">SGP-0001</span><span class="s">The Solana Constitution</span></div>
-        <div class="band urgent" style="grid-column: 2 / 4;">Create + 15% support</div>
-        <div class="band" style="grid-column: 4 / 11;">Review — frozen at commit 6f80d91</div>
-        <div class="band snap" style="grid-column: 11 / 12;">NCN snapshot</div>
-        <div class="band vote" style="grid-column: 12 / 15;">Network voting</div>
-        <div class="band marker" style="grid-column: 15 / 16;">Ratified?</div>
+        <div class="band" style="grid-column: 2 / 3;">15% ✓</div>
+        <div class="band" style="grid-column: 3 / 10;">Review — frozen at commit 6f80d91</div>
+        <div class="band snap" style="grid-column: 10 / 11;">NCN snapshot</div>
+        <div class="band vote" style="grid-column: 11 / 14;">Network voting</div>
+        <div class="band marker" style="grid-column: 14 / 15;">Ratified?</div>
 
         <div class="track-head">JitoSOL · bloc vote (JIP-30)</div>
 
         <!-- jitosol holders -->
         <div class="lane-label"><span class="t">JitoSOL holders</span><span class="s">Realms poll</span></div>
-        <div class="band jito" style="grid-column: 4 / 5;">Snapshot + distribution — Mon 10 Aug</div>
-        <div class="band ghost jito" style="grid-column: 5 / 7;">Claims open — verify weight</div>
-        <div class="band jito" style="grid-column: 7 / 10;">Holder vote on Realms — 3 epochs, 10% quorum</div>
-        <div class="band jito" style="grid-column: 10 / 11;">Tally + publish</div>
+        <div class="band jito" style="grid-column: 4 / 5;">Snapshot + distribution</div>
+        <div class="band ghost jito" style="grid-column: 5 / 6;">Claims open</div>
+        <div class="band jito" style="grid-column: 6 / 9;">Holder vote on Realms — live now, 3 epochs, 10% quorum</div>
+        <div class="band jito" style="grid-column: 9 / 11;">Tally + publish — 2 epochs</div>
 
         <!-- security council -->
         <div class="lane-label"><span class="t">DAO security council</span><span class="s">executes via pool manager keys</span></div>
-        <div class="band jito" style="grid-column: 10 / 11;">Council proposal + vote — mirror the poll</div>
+        <div class="band jito" style="grid-column: 10 / 11;">Council proposal + vote — bloc the poll's outcome</div>
         <div class="band jito-solid" style="grid-column: 11 / 14;">Execute cast_vote — 3-epoch window</div>
-        <div class="band ghost jito" style="grid-column: 14 / 15;">SGP-0001 buffer</div>
+        <div class="band ghost jito" style="grid-column: 14 / 15;">buffer</div>
 
         <!-- live epoch-progress line -->
         <div class="nowline" id="nowline"><span class="pill" id="nowpill"></span></div>
@@ -274,43 +276,38 @@
       <table class="etable">
         <thead><tr><th>Epoch</th><th>Dates (UTC)</th><th>Network (svmgov)</th><th>JitoSOL track</th></tr></thead>
         <tbody>
-          <tr><td class="e">1012</td><td class="d">04 Aug 13:32 → 06 Aug 16:14</td>
-            <td>Locked cohort crossed 15% support ✓. SGP-0001 created on-chain; support gathering begins.</td>
-            <td>Poll ops prep: snapshot tooling, distribution lists, Realms setup.</td></tr>
+          <tr class="hl"><td class="e">1012</td><td class="d">04 Aug 13:32 → 06 Aug 16:14</td>
+            <td>All three proposals crossed 15% support ✓. SGP-0001 created and crossed on-chain; schedule locked.</td>
+            <td>Poll ops: snapshot tooling, distribution lists, Realms setup.</td></tr>
           <tr><td class="e">1013</td><td class="d">06 Aug 16:14 → 08 Aug 18:57</td>
-            <td>Cohort Review begins (7 epochs). SGP-0001 crosses 15% support — locks its schedule.</td>
-            <td>Distribution dry run; claim site staged.</td></tr>
+            <td>Review begins for all three (7 epochs). Text frozen.</td>
+            <td>Distribution staged; claim site live.</td></tr>
           <tr><td class="e">1014</td><td class="d">08 Aug 18:57 → 10 Aug 21:39</td>
-            <td>Review. SGP-0001 Review begins.</td>
-            <td class="jt">Mon 10 Aug — JitoSOL snapshot + voting-token distribution; claims open.</td></tr>
+            <td>Review.</td>
+            <td class="jt">JitoSOL snapshot + voting-token distribution; claims open.</td></tr>
           <tr><td class="e">1015</td><td class="d">10 Aug 21:39 → 13 Aug 00:21</td>
             <td>Review.</td><td class="jt">Claims — holders verify their voting weight.</td></tr>
-          <tr><td class="e">1016</td><td class="d">13 Aug 00:21 → 15 Aug 03:03</td>
-            <td>Review.</td><td class="jt">Claims.</td></tr>
-          <tr class="hl"><td class="e">1017</td><td class="d">15 Aug 03:03 → 17 Aug 05:46</td>
-            <td>Review.</td><td class="jt"><strong>Holder poll opens on Realms</strong> — 3-epoch window.</td></tr>
-          <tr><td class="e">1018</td><td class="d">17 Aug 05:46 → 19 Aug 08:28</td>
+          <tr class="hl"><td class="e">1016</td><td class="d">13 Aug 00:21 → 15 Aug 03:03</td>
+            <td>Review.</td><td class="jt"><strong>Holder poll opens on Realms — live now.</strong> 3-epoch window.</td></tr>
+          <tr><td class="e">1017</td><td class="d">15 Aug 03:03 → 17 Aug 05:46</td>
             <td>Review.</td><td class="jt">Holder poll.</td></tr>
+          <tr><td class="e">1018</td><td class="d">17 Aug 05:46 → 19 Aug 08:28</td>
+            <td>Review.</td><td class="jt">Holder poll closes end of epoch — 10% quorum check.</td></tr>
           <tr><td class="e">1019</td><td class="d">19 Aug 08:28 → 21 Aug 11:10</td>
-            <td>Cohort Review ends.</td><td class="jt">Holder poll closes end of epoch — 10% quorum check.</td></tr>
+            <td>Review ends.</td><td class="jt">Tally + hashes published (2-epoch window begins).</td></tr>
           <tr><td class="e">1020</td><td class="d">21 Aug 11:10 → 23 Aug 13:53</td>
-            <td>Cohort NCN snapshot. SGP-0001 Review ends.</td>
-            <td class="jt">Tally + hashes published; security-council proposal raised and voted — mirror instruction approved.</td></tr>
+            <td>NCN snapshot — network stake weights fixed for all three.</td>
+            <td class="jt">Tally complete; security-council proposal raised and voted — bloc instruction approved.</td></tr>
           <tr class="hl"><td class="e">1021</td><td class="d">23 Aug 13:53 → 25 Aug 16:35</td>
-            <td><strong>Cohort voting opens.</strong> SGP-0001 NCN snapshot.</td>
-            <td class="jt"><strong>Execution window opens</strong> — council executes cast_vote for the cohort via pool manager keys.</td></tr>
+            <td><strong>Network voting opens for all three.</strong></td>
+            <td class="jt"><strong>Council executes cast_vote</strong> — the pool's full stake cast as a bloc via pool manager keys.</td></tr>
           <tr><td class="e">1022</td><td class="d">25 Aug 16:35 → 27 Aug 19:17</td>
-            <td>Cohort voting. <strong>SGP-0001 voting opens.</strong></td>
-            <td class="jt">Execute cast_vote for SGP-0001; verify cohort votes landed.</td></tr>
+            <td>Network voting.</td><td class="jt">Verify the pool's vote landed and matches the poll.</td></tr>
           <tr><td class="e">1023</td><td class="d">27 Aug 19:17 → 29 Aug 22:00</td>
-            <td>Cohort voting closes 29 Aug 22:00 UTC. SGP-0001 voting.</td>
-            <td>Execution buffer — retries if needed.</td></tr>
+            <td>Network voting closes 29 Aug 22:00 UTC.</td><td>Execution buffer.</td></tr>
           <tr class="hl"><td class="e">1024</td><td class="d">29 Aug 22:00 → 01 Sep 00:42</td>
-            <td><strong>Cohort finalization + results.</strong> SGP-0001 voting final epoch.</td>
-            <td>SGP-0001 execution buffer; publish cohort verification bundle.</td></tr>
-          <tr class="hl"><td class="e">1025</td><td class="d">01 Sep 00:42 →</td>
-            <td><strong>SGP-0001 voting closes; finalization.</strong> The Constitution — ratified?</td>
-            <td>Publish full end-to-end verification bundle.</td></tr>
+            <td><strong>Finalization + results for all three.</strong> Quorum (⅓) and supermajority (⅔) evaluated. The Constitution — ratified?</td>
+            <td>Publish the end-to-end verification bundle.</td></tr>
         </tbody>
       </table>
     </div>
@@ -318,9 +315,9 @@
 
   <footer>
     <p>Epoch boundary times are computed from on-chain block-time anchors (epoch length ≈ 50.7 h) and drift
-    slightly with actual slot times. Locked-cohort phases are read from live on-chain proposal accounts;
-    SGP-0001 assumes support crosses in epoch 1013. JitoSOL-track dates are the operating plan as of
-    5 Aug 2026. Program: <code class="inline">govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU</code>.</p>
+    slightly with actual slot times. Network phases are read from live on-chain proposal accounts; all three
+    proposals crossed 15% support in epoch 1012 and share the e1021–1023 voting window. JitoSOL-track dates
+    reflect the live holder poll (e1016–1018). Program: <code class="inline">govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU</code>.</p>
     <p><a href="/">The Constitution — sign it on-chain</a> · <a href="/jitosol/">JitoSOL in governance</a></p>
   </footer>
 
