@@ -21,6 +21,11 @@ const MINT = "JvouX2KHLX8rLHBmmxDUiUqiJDEBaUK5zia1BAGJquM";  // voting token
 const VAULT = "E6qoikdqnHkhZJXkn9iBn7CipW9yxc8sEqav51mnDro1"; // realm community-token holding PDA
 const QUORUM_FRACTION = 0.10;
 const VOTE_RECORD_V2 = 12;   // GovernanceAccountType::VoteRecordV2
+// Voting window is a fixed Realms timer, immutable once voting opened. Read on-chain:
+// proposal voting_at = 1786499234 (2026-08-12 01:47:14Z); governance voting_base_time
+// = 691200 s (8.0 days) -> deadline 2026-08-20 01:47:14Z. All three proposals share it.
+const VOTING_OPENED = 1786499234;
+const VOTING_DEADLINE = 1787190434;
 // Immutable proposal accounts under the realm, in ballot order.
 const PROPOSALS = [
   { id: "SGP-0001", name: "The Solana Constitution",   pubkey: "8jiLhXiouXrnfz2rToNDpFnzUiMUYZ7CLP4uPn85sBAS" },
@@ -77,6 +82,8 @@ async function main() {
     supply,
     quorum: Math.round(supply * QUORUM_FRACTION),
     turnout,
+    votingOpened: new Date(VOTING_OPENED * 1000).toISOString(),
+    deadline: new Date(VOTING_DEADLINE * 1000).toISOString(),
     proposals: PROPOSALS.map((p, i) => ({ id: p.id, name: p.name, ...tallies[i] })),
   };
   writeFileSync(OUT, JSON.stringify(out));

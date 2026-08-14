@@ -69,6 +69,14 @@
   .foot{color:var(--faint);font-size:12px;margin-top:28px;line-height:1.7;}
   .foot a{color:var(--accent);}
   .toggle{position:fixed;top:16px;right:16px;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;cursor:pointer;}
+
+  /* countdown */
+  .countdown{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-top:22px;padding:16px 20px;background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);}
+  .countdown .cd-lab{font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+  .countdown .cd-time{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:clamp(20px,4.4vw,28px);font-weight:700;letter-spacing:-.01em;color:var(--accent);line-height:1;}
+  .countdown .cd-time u{font-size:.5em;font-weight:600;color:var(--muted);text-decoration:none;margin:0 7px 0 2px;letter-spacing:.02em;}
+  .countdown .cd-date{font-size:12.5px;color:var(--faint);margin-left:auto;text-align:right;}
+  .countdown.closed .cd-time{color:var(--muted);}
 </style>
 <button class="toggle" id="toggle">◐ theme</button>
 <div class="wrap">
@@ -76,6 +84,12 @@
   <h1>JitoSOL Signalling Vote</h1>
   <p class="lede">Holders are voting on the three Solana Governance Proposals. If turnout reaches 10% of JitoSOL TVL, the Jito stake pool casts its full stake as a bloc for each result.</p>
   <div class="live"><span class="dot"></span><span id="livelbl">live · updating</span></div>
+
+  <div class="countdown" id="countdown">
+    <span class="cd-lab" id="cdLab">Voting closes in</span>
+    <span class="cd-time mono" id="cdTime">—</span>
+    <span class="cd-date" id="cdDate"></span>
+  </div>
 
   <div class="quorum">
     <div class="top">
@@ -101,7 +115,7 @@
 </div>
 <script>
 // Baked snapshot. When served on-site, /data/votedata.json (refreshed server-side) overrides this.
-const VOTE = {"supply":7710963,"quorum":771096,"turnout":154316,"proposals":[{"id":"SGP-0001","name":"The Solana Constitution","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0002","name":"Double Disinflation","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0003","name":"Resource & Inclusion Fee","yes":154316,"no":0,"abstain":0,"voters":7}]};
+const VOTE = {"supply":7710963,"quorum":771096,"turnout":154316,"votingOpened":"2026-08-12T01:47:14Z","deadline":"2026-08-20T01:47:14Z","proposals":[{"id":"SGP-0001","name":"The Solana Constitution","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0002","name":"Double Disinflation","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0003","name":"Resource & Inclusion Fee","yes":154316,"no":0,"abstain":0,"voters":7}]};
 (()=>{
   const $=id=>document.getElementById(id);const rootEl=document.documentElement;
   const setT=l=>rootEl.setAttribute("data-theme",l?"light":"dark");
@@ -110,7 +124,24 @@ const VOTE = {"supply":7710963,"quorum":771096,"turnout":154316,"proposals":[{"i
   const fmt=n=>Math.round(n).toLocaleString("en-US");
   const fmtk=n=>n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(Math.round(n/1e3))+"k":Math.round(n);
 
+  // live countdown to the Realms close
+  let deadlineMs=null;
+  function tick(){
+    if(!deadlineMs)return;
+    const rem=deadlineMs-Date.now();const cd=$("countdown");
+    if(rem<=0){cd.classList.add("closed");$("cdLab").textContent="Voting closed";$("cdTime").textContent="—";return;}
+    const s=Math.floor(rem/1000),d=Math.floor(s/86400),h=Math.floor(s%86400/3600),m=Math.floor(s%3600/60),ss=s%60;
+    $("cdTime").innerHTML=`${d}<u>d</u>${String(h).padStart(2,"0")}<u>h</u>${String(m).padStart(2,"0")}<u>m</u>${String(ss).padStart(2,"0")}<u>s</u>`;
+  }
+  function setDeadline(iso){
+    if(!iso){$("countdown").style.display="none";return;}
+    deadlineMs=Date.parse(iso);
+    $("cdDate").innerHTML=`Closes<br>${new Date(deadlineMs).toLocaleString(undefined,{weekday:"short",month:"short",day:"numeric",hour:"2-digit",minute:"2-digit",timeZoneName:"short"})}`;
+    tick();
+  }
+
   function render(d){
+    setDeadline(d.deadline);
     const pct=d.turnout/d.supply*100;             // % of TVL that voted
     const quorumPct=10;
     const ofQuorum=Math.min(100, pct/quorumPct*100);
@@ -144,6 +175,7 @@ const VOTE = {"supply":7710963,"quorum":771096,"turnout":154316,"proposals":[{"i
     $("foot").innerHTML=`Realms instance <span class="mono">jitosol-sgp-council-2026-08</span>. Turnout is voting-token weight deposited to the poll; 1 token = 1 JitoSOL at the snapshot. Figures update as the vote proceeds. Vote at <a href="https://vote.jito.network" target="_blank" rel="noopener">vote.jito.network</a> · how it works at <a href="https://solanagov.com/jitosol" target="_blank" rel="noopener">solanagov.com/jitosol</a>.`;
   }
   render(VOTE);
+  setInterval(tick,1000);
   // when deployed on-site, pull the freshest baked data
   fetch("/data/votedata.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.proposals)render(d);}).catch(()=>{});
 })();
