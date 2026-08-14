@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>JitoSOL Signalling Vote — Live Status</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Live status of the JitoSOL signalling vote: progress toward the 10% quorum and Yes/No/Abstain across the three Solana Governance Proposals.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%B3%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#F2F5F6;--surface:#FFFFFF;--surface-2:#E9EFF0;--ink:#0E1B24;--muted:#5A6B77;--faint:#8296A1;
+    --line:rgba(14,27,36,.13);--line-2:rgba(14,27,36,.2);
+    --accent:#0B8F72;--yes:#0B8F72;--no:#C0553B;--abstain:#8296A1;
+    --accent-soft:rgba(11,143,114,.12);--track:#DDE6E8;
+    --shadow:0 1px 2px rgba(14,27,36,.05),0 10px 30px rgba(14,27,36,.06);
+  }
+  @media(prefers-color-scheme:dark){:root{
+    --bg:#0B111A;--surface:#111927;--surface-2:#17212F;--ink:#E9F0F4;--muted:#93A3B0;--faint:#64768399;
+    --line:rgba(233,240,244,.1);--line-2:rgba(233,240,244,.2);
+    --accent:#3ADFB2;--yes:#2EE6A6;--no:#E5675A;--abstain:#7C8697;
+    --accent-soft:rgba(58,223,178,.1);--track:#1E2A3A;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.28);}}
+  :root[data-theme="light"]{--bg:#F2F5F6;--surface:#FFFFFF;--surface-2:#E9EFF0;--ink:#0E1B24;--muted:#5A6B77;--faint:#8296A1;--line:rgba(14,27,36,.13);--line-2:rgba(14,27,36,.2);--accent:#0B8F72;--yes:#0B8F72;--no:#C0553B;--abstain:#8296A1;--accent-soft:rgba(11,143,114,.12);--track:#DDE6E8;--shadow:0 1px 2px rgba(14,27,36,.05),0 10px 30px rgba(14,27,36,.06);}
+  :root[data-theme="dark"]{--bg:#0B111A;--surface:#111927;--surface-2:#17212F;--ink:#E9F0F4;--muted:#93A3B0;--faint:#64768399;--line:rgba(233,240,244,.1);--line-2:rgba(233,240,244,.2);--accent:#3ADFB2;--yes:#2EE6A6;--no:#E5675A;--abstain:#7C8697;--accent-soft:rgba(58,223,178,.1);--track:#1E2A3A;--shadow:0 1px 2px rgba(0,0,0,.3),0 12px 32px rgba(0,0,0,.28);}
+  *{box-sizing:border-box;}
+  body{background:var(--bg);color:var(--ink);margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;}
+  .wrap{max-width:760px;margin:0 auto;padding:48px 22px 72px;}
+  .eyebrow{font-family:ui-monospace,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:0 0 14px;}
+  h1{font-size:clamp(28px,5vw,40px);line-height:1.08;letter-spacing:-.025em;font-weight:750;margin:0 0 10px;}
+  .lede{font-size:16px;color:var(--muted);margin:0;max-width:56ch;}
+  .live{display:inline-flex;align-items:center;gap:7px;font-family:ui-monospace,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-top:14px;}
+  .live .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);}
+
+  /* quorum panel */
+  .quorum{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:28px 30px;margin-top:34px;}
+  .quorum .top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px;}
+  .quorum .big{font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;font-size:clamp(40px,9vw,68px);font-weight:700;letter-spacing:-.03em;line-height:.95;color:var(--accent);}
+  .quorum .big span{font-size:.42em;color:var(--muted);font-weight:600;letter-spacing:-.01em;}
+  .quorum .side{text-align:right;font-size:13px;color:var(--muted);line-height:1.5;}
+  .quorum .side b{color:var(--ink);font-weight:650;font-family:ui-monospace,monospace;font-variant-numeric:tabular-nums;}
+  .bar{position:relative;height:26px;background:var(--track);border-radius:8px;overflow:visible;margin-top:6px;}
+  .bar>i{display:block;height:100%;background:var(--accent);border-radius:8px 4px 4px 8px;min-width:6px;transition:width .5s ease;}
+  .bar .qtick{position:absolute;top:-7px;bottom:-7px;width:2px;background:var(--line-2);right:0;}
+  .bar .qlab{position:absolute;top:-23px;right:0;text-align:right;font-family:ui-monospace,monospace;font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;}
+  .barfoot{display:flex;justify-content:space-between;font-family:ui-monospace,monospace;font-size:11px;color:var(--faint);margin-top:9px;}
+  .quorum .note{font-size:13px;color:var(--muted);margin:18px 0 0;padding-top:16px;border-top:1px solid var(--line);}
+  .quorum .note.met{color:var(--accent);font-weight:600;}
+
+  h2{font-size:15px;font-weight:650;letter-spacing:.01em;margin:36px 0 4px;}
+  .h2sub{font-size:13px;color:var(--faint);margin:0 0 16px;}
+
+  /* proposal cards */
+  .props{display:grid;gap:12px;}
+  .prop{background:var(--surface);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;}
+  .prop .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;}
+  .prop .id{font-family:ui-monospace,monospace;font-size:11px;color:var(--accent);letter-spacing:.04em;}
+  .prop .nm{font-weight:650;font-size:15.5px;}
+  .prop .vcount{font-family:ui-monospace,monospace;font-size:11.5px;color:var(--faint);white-space:nowrap;}
+  .split{display:flex;height:16px;border-radius:5px;overflow:hidden;background:var(--track);gap:2px;}
+  .split>span{display:block;height:100%;}
+  .split .sy{background:var(--yes);} .split .sn{background:var(--no);} .split .sa{background:var(--abstain);}
+  .split.empty{background:var(--track);}
+  .legend{display:flex;gap:16px;margin-top:9px;font-family:ui-monospace,monospace;font-size:11.5px;color:var(--muted);flex-wrap:wrap;}
+  .legend b{color:var(--ink);}
+  .legend .k{display:inline-flex;align-items:center;gap:6px;}
+  .legend .sw{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  .legend .sw.y{background:var(--yes);}.legend .sw.n{background:var(--no);}.legend .sw.a{background:var(--abstain);}
+
+  .foot{color:var(--faint);font-size:12px;margin-top:28px;line-height:1.7;}
+  .foot a{color:var(--accent);}
+  .toggle{position:fixed;top:16px;right:16px;font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--line-2);border-radius:999px;padding:6px 12px;cursor:pointer;}
+</style>
+<button class="toggle" id="toggle">◐ theme</button>
+<div class="wrap">
+  <p class="eyebrow">JitoSOL · JIP-30</p>
+  <h1>JitoSOL Signalling Vote</h1>
+  <p class="lede">Holders are voting on the three Solana Governance Proposals. If turnout reaches 10% of JitoSOL TVL, the Jito stake pool casts its full stake as a bloc for each result.</p>
+  <div class="live"><span class="dot"></span><span id="livelbl">live · updating</span></div>
+
+  <div class="quorum">
+    <div class="top">
+      <div><div class="big" id="turnoutPct">—<span> turnout</span></div></div>
+      <div class="side" id="quorumSide"></div>
+    </div>
+    <div class="bar"><i id="barfill"></i><div class="qtick"></div><div class="qlab">10% quorum</div></div>
+    <div class="barfoot"><span>0</span><span id="quorumTokens">quorum</span></div>
+    <p class="note" id="quorumNote"></p>
+  </div>
+
+  <h2>Voting behaviour across the three proposals</h2>
+  <p class="h2sub">Live Yes / No / Abstain, in voting-token weight. One realm, one token, three proposals.</p>
+  <div class="props" id="props"></div>
+
+  <div class="legend" style="margin-top:14px">
+    <span class="k"><i class="sw y"></i>Yes</span>
+    <span class="k"><i class="sw n"></i>No</span>
+    <span class="k"><i class="sw a"></i>Abstain</span>
+  </div>
+
+  <p class="foot" id="foot"></p>
+</div>
+<script>
+// Baked snapshot. When served on-site, /data/votedata.json (refreshed server-side) overrides this.
+const VOTE = {"supply":7710963,"quorum":771096,"turnout":154316,"proposals":[{"id":"SGP-0001","name":"The Solana Constitution","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0002","name":"Double Disinflation","yes":154316,"no":0,"abstain":0,"voters":7},{"id":"SGP-0003","name":"Resource & Inclusion Fee","yes":154316,"no":0,"abstain":0,"voters":7}]};
+(()=>{
+  const $=id=>document.getElementById(id);const rootEl=document.documentElement;
+  const setT=l=>rootEl.setAttribute("data-theme",l?"light":"dark");
+  let st=null;try{st=localStorage.getItem("jvote-theme");}catch(e){}if(st)setT(st==="light");
+  $("toggle").onclick=()=>{const l=rootEl.getAttribute("data-theme")!=="light";setT(l);try{localStorage.setItem("jvote-theme",l?"light":"dark");}catch(e){}};
+  const fmt=n=>Math.round(n).toLocaleString("en-US");
+  const fmtk=n=>n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(Math.round(n/1e3))+"k":Math.round(n);
+
+  function render(d){
+    const pct=d.turnout/d.supply*100;             // % of TVL that voted
+    const quorumPct=10;
+    const ofQuorum=Math.min(100, pct/quorumPct*100);
+    $("turnoutPct").innerHTML=pct.toFixed(2)+"%<span> of TVL voted</span>";
+    $("barfill").style.width=Math.max(2,ofQuorum)+"%";
+    $("quorumTokens").textContent=fmt(d.quorum)+" tokens = 10%";
+    $("quorumSide").innerHTML=`<b>${fmt(d.turnout)}</b> of <b>${fmt(d.quorum)}</b> tokens<br>${ofQuorum.toFixed(0)}% of the way to quorum`;
+    const met=pct>=quorumPct;
+    const note=$("quorumNote");
+    if(met){note.className="note met";note.textContent="Quorum met. The stake pool will cast its full stake as a bloc for each result.";}
+    else{note.className="note";note.innerHTML=`Quorum not yet met. <b style="color:var(--ink)">${fmt(d.quorum-d.turnout)}</b> more voting-token weight is needed to trigger the pool's on-chain bloc vote.`;}
+
+    let h="";
+    d.proposals.forEach(p=>{
+      const tot=p.yes+p.no+p.abstain;
+      const w=x=>tot>0?(x/tot*100):0;
+      const split=tot>0
+        ? `<div class="split">${p.yes>0?`<span class="sy" style="width:${w(p.yes)}%"></span>`:""}${p.no>0?`<span class="sn" style="width:${w(p.no)}%"></span>`:""}${p.abstain>0?`<span class="sa" style="width:${w(p.abstain)}%"></span>`:""}</div>`
+        : `<div class="split empty"></div>`;
+      const pc=x=>tot>0?(x/tot*100).toFixed(0)+"%":"0%";
+      h+=`<div class="prop">
+        <div class="head"><div><span class="id">${p.id}</span> &nbsp;<span class="nm">${p.name}</span></div>
+          <span class="vcount">${p.voters} voter${p.voters===1?"":"s"} · ${fmtk(tot)} weight</span></div>
+        ${split}
+        <div class="legend"><span class="k"><i class="sw y"></i>Yes <b>${pc(p.yes)}</b></span>
+          <span class="k"><i class="sw n"></i>No <b>${pc(p.no)}</b></span>
+          <span class="k"><i class="sw a"></i>Abstain <b>${pc(p.abstain)}</b></span></div>
+      </div>`;
+    });
+    $("props").innerHTML=h;
+    $("foot").innerHTML=`Realms instance <span class="mono">jitosol-sgp-council-2026-08</span>. Turnout is voting-token weight deposited to the poll; 1 token = 1 JitoSOL at the snapshot. Figures update as the vote proceeds. Vote at <a href="https://vote.jito.network" target="_blank" rel="noopener">vote.jito.network</a> · how it works at <a href="https://solanagov.com/jitosol" target="_blank" rel="noopener">solanagov.com/jitosol</a>.`;
+  }
+  render(VOTE);
+  // when deployed on-site, pull the freshest baked data
+  fetch("/data/votedata.json?t="+Date.now(),{cache:"no-store"}).then(r=>r.ok?r.json():null).then(d=>{if(d&&d.proposals)render(d);}).catch(()=>{});
+})();
+</script>

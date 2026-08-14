@@ -27,6 +27,7 @@ jobs:
         run: |
           node scripts/update-signers.mjs || echo "signers refresh failed; using committed copy"
           node scripts/build-tracker.mjs || echo "tracker bake failed; using committed copy"
+          node scripts/build-votedata.mjs || echo "votedata bake failed; using committed copy"
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
