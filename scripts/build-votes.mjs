@@ -40,20 +40,36 @@ const disc = n => createHash("sha256").update("account:" + n).digest().slice(0, 
 const ALPHA = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 function b58(bytes) { let n = 0n; for (const b of bytes) n = n * 256n + BigInt(b); let s = ""; while (n > 0n) { s = ALPHA[Number(n % 58n)] + s; n /= 58n; } for (const b of bytes) { if (b === 0) s = "1" + s; else break; } return s; }
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function rpc(method, params) {
   let lastErr;
-  for (let a = 0; a < 4; a++) {
+  for (let a = 0; a < 6; a++) {
     try {
       const r = await fetch(RPC, { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) });
+      if (r.status === 429) throw new Error("Too many requests (429)");
       const j = await r.json();
       if (j.error) throw new Error(j.error.message || JSON.stringify(j.error));
       return j.result;
-    } catch (e) { lastErr = e; await new Promise(x => setTimeout(x, 1000 * (a + 1))); }
+    } catch (e) {
+      lastErr = e;
+      // The public RPC rate-limits getProgramAccounts hard — back off longer on 429.
+      const rateLimited = /too many|429|rate limit/i.test(e.message || "");
+      await sleep((rateLimited ? 3500 : 900) * (a + 1));
+    }
   }
   throw lastErr;
 }
-const gpa = (filters) => rpc("getProgramAccounts", [PROGRAM, { encoding: "base64", filters }]);
+// getProgramAccounts is the rate-limited call — serialize with a min gap between
+// calls so a burst of six (2 per proposal) never trips the per-method limit.
+let lastGpaAt = 0;
+async function gpa(filters) {
+  const GAP = 1100, since = Date.now() - lastGpaAt;
+  if (since < GAP) await sleep(GAP - since);
+  const res = await rpc("getProgramAccounts", [PROGRAM, { encoding: "base64", filters }]);
+  lastGpaAt = Date.now();
+  return res;
+}
 const buf64 = a => Uint8Array.from(Buffer.from(a.account.data[0], "base64"));
 const u64 = (dv, o) => Number(dv.getBigUint64(o, true));
 
@@ -110,11 +126,10 @@ async function main() {
   const proposals = [];
 
   for (const P of PROPOSALS) {
-    const [propAcct, votes, overrides] = await Promise.all([
-      rpc("getAccountInfo", [P.pubkey, { encoding: "base64" }]),
-      gpa([{ memcmp: { offset: 0, bytes: VOTE_DISC } }, { memcmp: { offset: 40, bytes: P.pubkey } }]),
-      gpa([{ memcmp: { offset: 0, bytes: OVR_DISC } }, { memcmp: { offset: 104, bytes: P.pubkey } }]),
-    ]);
+    // Sequential (not Promise.all) so gpa()'s min-gap serialization actually holds.
+    const propAcct = await rpc("getAccountInfo", [P.pubkey, { encoding: "base64" }]);
+    const votes = await gpa([{ memcmp: { offset: 0, bytes: VOTE_DISC } }, { memcmp: { offset: 40, bytes: P.pubkey } }]);
+    const overrides = await gpa([{ memcmp: { offset: 0, bytes: OVR_DISC } }, { memcmp: { offset: 104, bytes: P.pubkey } }]);
 
     // proposal tallies + state
     const pb = Uint8Array.from(Buffer.from(propAcct.value.data[0], "base64"));
