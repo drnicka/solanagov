@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex, nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BAM Subsidy Mechanism Simulator</title>
+<style>
+  :root{
+    --bg:#0b0e14; --panel:#12161f; --panel2:#171c27; --border:#232a38;
+    --text:#e6e9ef; --muted:#8b93a7; --accent:#39d98a; --accent2:#5b8cff;
+    --warn:#ffb454; --bad:#ff6b6b; --good:#39d98a;
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;padding-bottom:60px}
+  header{padding:22px 28px 14px;border-bottom:1px solid var(--border);display:flex;flex-wrap:wrap;align-items:baseline;gap:14px}
+  header h1{font-size:19px;font-weight:700}
+  header .sub{color:var(--muted);font-size:13px}
+  .layout{display:grid;grid-template-columns:330px 1fr;gap:18px;padding:18px 28px;align-items:start}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px}
+  .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:12px}
+  .card + .card{margin-top:16px}
+  .controls .group{margin-bottom:14px;padding-bottom:12px;border-bottom:1px dashed var(--border)}
+  .controls .group:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+  .grouplabel{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--accent2);margin-bottom:8px;font-weight:600}
+  .ctl{margin-bottom:10px}
+  .ctl label{display:flex;justify-content:space-between;font-size:12.5px;color:var(--text);margin-bottom:3px}
+  .ctl label .val{font-family:var(--mono);color:var(--accent);font-size:12px}
+  input[type=range]{width:100%;accent-color:var(--accent2);height:4px}
+  .toggle{display:flex;gap:6px}
+  .toggle button{flex:1;background:var(--panel2);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:5px 4px;font-size:12px;cursor:pointer}
+  .toggle button.on{background:#1d2a45;color:#cfe0ff;border-color:var(--accent2)}
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
+  .presets button{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 9px;font-size:12px;cursor:pointer}
+  .presets button:hover{border-color:var(--accent)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th{color:var(--muted);font-weight:600;text-align:right;padding:6px 8px;border-bottom:1px solid var(--border);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+  td{padding:6px 8px;text-align:right;border-bottom:1px solid #1a2030;font-family:var(--mono);font-size:12px}
+  th:first-child,td:first-child{text-align:left;font-family:inherit}
+  tr:last-child td{border-bottom:none}
+  .pos{color:var(--good)} .neg{color:var(--bad)} .neu{color:var(--muted)}
+  .cards-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+  .stat .k{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .stat .v{font-size:19px;font-weight:700;font-family:var(--mono);margin-top:3px}
+  .stat .d{font-size:11px;color:var(--muted);margin-top:2px}
+  .charts{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:1300px){.charts{grid-template-columns:1fr}}
+  svg{width:100%;height:auto;display:block}
+  .axis{stroke:#2a3245;stroke-width:1}
+  .gridline{stroke:#1c2333;stroke-width:1}
+  .ticktext{fill:var(--muted);font-size:10px;font-family:var(--mono)}
+  .note{color:var(--muted);font-size:11.5px;margin-top:10px;line-height:1.45}
+  .flag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10.5px;font-family:var(--mono)}
+  .flag.ok{background:#12301f;color:var(--good)} .flag.warn{background:#3a2a10;color:var(--warn)} .flag.risk{background:#3a1616;color:var(--bad)}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-top:6px}
+  .legend span::before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px;background:var(--c)}
+  .playbtn{background:#173123;color:var(--good);border:1px solid #245a3c;border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer}
+  .playbtn.alt{background:var(--panel2);color:var(--muted);border-color:var(--border)}
+  .playbtn:hover{filter:brightness(1.2)}
+  .rollstats{display:flex;gap:18px;flex-wrap:wrap;margin-top:10px;font-family:var(--mono);font-size:12.5px}
+  .rollstats div b{color:var(--accent);font-weight:600}
+  .rollstats div{color:var(--muted)}
+  .presets button.sel{background:#1d2a45;color:#cfe0ff;border-color:var(--accent2)}
+  .tip{position:relative;display:inline-block;margin-left:5px;width:14px;height:14px;border-radius:50%;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:10px;text-align:center;line-height:12px;cursor:help;font-family:var(--mono)}
+  .tip .tiptext{visibility:hidden;position:absolute;z-index:9;left:18px;top:-8px;width:250px;background:#1c2333;border:1px solid #35405a;color:var(--text);font-size:11.5px;line-height:1.45;padding:8px 10px;border-radius:8px;font-weight:400}
+  .tip:hover .tiptext{visibility:visible}
+  input.inert{opacity:.3}
+  .inertnote{color:var(--warn)!important;font-size:11px!important;margin-top:2px!important}
+  footer{padding:14px 28px;color:var(--muted);font-size:11.5px;border-top:1px solid var(--border);margin-top:8px}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>BAM Subsidy Mechanism Simulator</h1>
+  <span class="sub">Re-tiered effective-stake curve &middot; pool-share ceiling &middot; delegation interaction &middot; wind-down cost — calibrated to the JitoSOL + Subsidy Memo</span>
+</header>
+
+<div class="layout">
+
+  <!-- ============ CONTROLS ============ -->
+  <div>
+    <div class="card controls">
+      <h2>Parameters</h2>
+
+      <div class="group">
+        <div class="grouplabel">Core strategies</div>
+        <div class="presets">
+          <button data-preset="flat" onclick="applyPreset('flat')">Flat per-SOL</button>
+          <button data-preset="current" onclick="applyPreset('current')">JIP-31 (current)</button>
+          <button data-preset="memo" onclick="applyPreset('memo')">Memo proposal</button>
+        </div>
+        <div class="grouplabel" style="margin-top:10px">Econ strategies &mdash; who gets what</div>
+        <div class="presets">
+          <button data-preset="smallmax" onclick="applyPreset('smallmax')">Small-validator max</button>
+          <button data-preset="whalesoft" onclick="applyPreset('whalesoft')">Whale-gentle</button>
+          <button data-preset="stakecap" onclick="applyPreset('stakecap')">Carry-over stake cap</button>
+          <button data-preset="optionc" onclick="applyPreset('optionc')">Option C package</button>
+        </div>
+        <div class="note" style="margin-top:8px">Timing strategies (how the programme ends) live next to the time-series charts at the bottom of the page.</div>
+      </div>
+
+      <div class="group">
+        <div class="grouplabel">Mechanism curve</div>
+        <div class="ctl"><label><span>Full-rate (1.0&times;) band<span class="tip">?<span class="tiptext">How much of every validator's stake earns full (1.0&times;) subsidy credit. Small (e.g. 100K) = a flat floor every validator gets equally &mdash; favours small validators. Large (e.g. 1.5M, today's setting) = a rate whales enjoy across their whole stake. Has no effect above the inflection threshold.</span></span></span> <span class="val" id="v_band"></span></label>
+          <input type="range" id="p_band" min="0" max="1500" step="25" value="100"></div>
+        <div class="ctl"><label><span>Mid-band rate<span class="tip">?<span class="tiptext">Credit rate for stake between the full-rate band and the inflection threshold &mdash; the range where most eligible stake sits. Lowering it is the main way to redistribute within the sub-1.5M group (memo: 0.6&times;, moving ~6pp of pool to the &lt;250K brackets).</span></span></span> <span class="val" id="v_mid"></span></label>
+          <input type="range" id="p_mid" min="0" max="100" step="5" value="60">
+          <div class="note inertnote" id="inert_mid" style="display:none">No effect right now: full-rate band &ge; inflection threshold, so there is no mid band.</div></div>
+        <div class="ctl"><label><span>Inflection threshold<span class="tip">?<span class="tiptext">Where the mid band ends and the top tranche begins. Stake above this line earns the top-tranche rate. Memo keeps it at 1.5M &mdash; raising it moves more whale stake into the (higher) mid rate; lowering it taxes upper-mid validators sooner.</span></span></span> <span class="val" id="v_infl"></span></label>
+          <input type="range" id="p_infl" min="500" max="4000" step="100" value="1500">
+          <div class="note inertnote" id="inert_infl" style="display:none">No effect right now: mid-band and top-tranche rates are equal, so the boundary between them doesn't matter.</div></div>
+        <div class="ctl"><label><span>Top-tranche rate<span class="tip">?<span class="tiptext">Credit for stake above the inflection threshold &mdash; whale stake. The single biggest funding lever: today 0.5&times; (whales take ~40% of pool); memo cuts it to 0.1&times; (&minus;4.7pp from the &gt;1.5M bracket on its own). Zero = whales excluded above the inflection.</span></span></span> <span class="val" id="v_top"></span></label>
+          <input type="range" id="p_top" min="0" max="100" step="5" value="10"></div>
+      </div>
+
+      <div class="group">
+        <div class="grouplabel">Concentration cap</div>
+        <div class="ctl toggle" id="capToggle">
+          <button data-cap="share" class="on">Pool-share ceiling</button>
+          <button data-cap="eff">Effective-stake cap</button>
+          <button data-cap="none">None</button>
+        </div>
+        <div class="ctl" id="ctl_ceiling"><label><span>Pool-share ceiling<span class="tip">?<span class="tiptext">Hard limit on the share of each epoch's pool any single validator can receive (memo: 2%). Excess is redistributed to everyone below the ceiling. Only Binance hits 2% today. This slider is only shown when 'Pool-share ceiling' is the selected cap type.</span></span></span> <span class="val" id="v_ceil"></span></label>
+          <input type="range" id="p_ceil" min="5" max="100" step="5" value="20"></div>
+        <div class="ctl" id="ctl_effcap" style="display:none"><label><span>Effective-stake cap<span class="tip">?<span class="tiptext">The old JIP-31-style cap: effective stake can't exceed this value. With the memo curve it binds at ~4.5M raw stake &mdash; only Binance is above that line, making it a single-name rule (&minus;46% for Binance vs ~&minus;30% for peers). Only shown when 'Effective-stake cap' is selected.</span></span></span> <span class="val" id="v_effcap"></span></label>
+          <input type="range" id="p_effcap" min="500" max="8000" step="100" value="3000"></div>
+      </div>
+
+      <div class="group">
+        <div class="grouplabel">Pool &amp; delegation interaction</div>
+        <div class="ctl"><label><span>Monthly pool (100% of revenue)<span class="tip">?<span class="tiptext">DAO protocol revenue routed to the subsidy pool, in $/mo at $90 SOL. Checks are a share of this pool, so they float with revenue &mdash; while delegation losses don't. Drag it down to see the memo's biggest flagged risk. Memo run-rate: $338,231/mo.</span></span></span> <span class="val" id="v_pool"></span></label>
+          <input type="range" id="p_pool" min="100000" max="700000" step="1000" value="338231">
+          <div class="note" style="margin-top:2px">Memo run-rate: $338,231/mo (July 2026 actual: ~$362k). Checks float with revenue.</div></div>
+        <div class="ctl"><label><span>SOL price<span class="tip">?<span class="tiptext">Scales every dollar figure on the page: the subsidy is paid in JitoSOL and delegation income is earned in SOL, so both scale with price. Percentage changes (&Delta; columns) are unaffected &mdash; price moves the stakes, not the fairness. Baseline: $90.</span></span></span> <span class="val" id="v_price"></span></label>
+          <input type="range" id="p_price" min="20" max="400" step="5" value="90" list="priceticks">
+          <datalist id="priceticks"><option value="90"></option></datalist>
+          <div class="note" style="margin-top:2px" id="note_price"></div></div>
+        <div class="ctl"><label><span>JitoSOL delegation moved<span class="tip">?<span class="tiptext">Share of all JitoSOL delegation shifted pro-rata to the Jito pass-through validator. This sets the income loss the subsidy must offset. 15% clears the 0/0 yield ceiling (5.22%); the memo proposes 25% (target 5.28%). Phases in at max 7.5% per steward cycle.</span></span></span> <span class="val" id="v_move"></span></label>
+          <input type="range" id="p_move" min="0" max="30" step="1" value="25" list="moveticks">
+          <datalist id="moveticks"><option value="15"></option><option value="25"></option></datalist>
+          <div class="note" style="margin-top:2px">Memo proposal: 25%. Ceiling clears at 15%.</div></div>
+        <div class="ctl"><label><span>Sub-50K carve-out (Option C)<span class="tip">?<span class="tiptext">Slice of the pool reserved for the 21 BAM validators below the 50K eligibility floor who hold delegation but get nothing under the memo design. 0% = memo as written; 1.5% = Draft Option C (covers their ~$2.4k/mo loss with headroom). Comes out of every other bracket.</span></span></span> <span class="val" id="v_carve"></span></label>
+          <input type="range" id="p_carve" min="0" max="50" step="5" value="0"></div>
+      </div>
+
+      <div class="group">
+        <div class="grouplabel">Wind-down schedule</div>
+        <div class="ctl"><label><span>Full-rate quarters before decay<span class="tip">?<span class="tiptext">How many quarters the subsidy runs at 100% of revenue before the decay begins. Memo: 1 (all of Q4 2026, deliberately alongside the delegation move, when retention risk peaks). 0 = decay starts immediately; 2 = extend the cushion into Q1 at ~$1M extra.</span></span></span> <span class="val" id="v_flatq"></span></label>
+          <input type="range" id="p_flatq" min="0" max="2" step="1" value="1"></div>
+        <div class="ctl"><label><span>Decay half-life<span class="tip">?<span class="tiptext">Epochs for the subsidy rate to halve once decay starts: rate = &frac12;^(epochs/half-life). Memo: 10 epochs = one steward cycle (~3 weeks). Shorter = cheaper programme, sharper step-down; longer = softer landing, more spend. One constant sets the whole path &mdash; no review clause.</span></span></span> <span class="val" id="v_half"></span></label>
+          <input type="range" id="p_half" min="5" max="40" step="1" value="10"></div>
+        <div class="ctl"><label><span>Decay duration<span class="tip">?<span class="tiptext">How long the decay runs before the programme formally terminates. Memo: 87 epochs (to the last epoch of Q2 2027), by which point the rate is ~0.3% &mdash; nothing left to step off. Shortening it barely changes cost (the tail is tiny); it changes the official end date.</span></span></span> <span class="val" id="v_dur"></span></label>
+          <input type="range" id="p_dur" min="20" max="180" step="1" value="87"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Reading the trade-offs</h2>
+      <div class="note">
+        <b>Shrink the full-rate band</b> &rarr; turns 1.0&times; into a flat floor everyone gets; funds the small end.<br><br>
+        <b>Lower the mid-band rate</b> &rarr; taxes the band where most eligible stake sits (funds ~6pp of redistribution at 0.6&times;).<br><br>
+        <b>Lower the top rate</b> &rarr; the single largest funding source; hits the &gt;1.5M bracket.<br><br>
+        <b>Ceiling vs stake cap</b> &rarr; the stake cap is a single-name rule (only Binance binds, &minus;46%); the pool-share ceiling spreads the top-end cut evenly.<br><br>
+        <b>Delegation moved</b> &rarr; fixed income loss that the subsidy must offset; watch the Combined Income table &mdash; the memo targets &minus;9% to &minus;11% below 1.5M.<br><br>
+        <b>Half-life</b> &rarr; shorter = cheaper programme, sharper step-down; longer = softer landing, more spend.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div>
+    <div class="card" style="margin-bottom:16px;border-color:#2b3a5e">
+      <h2>Selected strategy</h2>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px" id="presetName">—</div>
+      <div class="note" style="margin-top:0" id="presetDesc"></div>
+    </div>
+
+    <div class="cards-row">
+      <div class="stat"><div class="k">Programme total</div><div class="v" id="s_total">—</div><div class="d">full-rate + decay</div></div>
+      <div class="stat"><div class="k">Decay-phase spend</div><div class="v" id="s_decay">—</div><div class="d" id="s_decayd">—</div></div>
+      <div class="stat"><div class="k">Small-val median &Delta;</div><div class="v" id="s_small">—</div><div class="d">50–100K, subsidy only</div></div>
+      <div class="stat"><div class="k">Pivotal bracket &Delta;</div><div class="v" id="s_pivot">—</div><div class="d">100–250K, subsidy only</div></div>
+      <div class="stat"><div class="k">Binance check</div><div class="v" id="s_binance">—</div><div class="d" id="s_binanced">—</div></div>
+      <div class="stat"><div class="k">Whale share of pool</div><div class="v" id="s_whale">—</div><div class="d">&gt;1.5M bracket (39.6% today)</div></div>
+    </div>
+
+    <div class="charts">
+      <div class="card">
+        <h2>Mechanism curve — effective stake vs raw stake</h2>
+        <div id="chart_curve"></div>
+        <div class="legend">
+          <span style="--c:#5b8cff">Proposed curve</span>
+          <span style="--c:#5f6b85">Current (JIP-31)</span>
+          <span style="--c:#39d98a">Validators (synthetic set)</span>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Pool share by bracket — current vs proposed</h2>
+        <div id="chart_share"></div>
+        <div class="legend"><span style="--c:#5f6b85">Current (JIP-31)</span><span style="--c:#5b8cff">Proposed</span></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Subsidy distribution by bracket</h2>
+      <table id="tbl_brackets"></table>
+      <div class="note" id="note_carve"></div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Whale spotlight — the top end under the cap</h2>
+      <table id="tbl_whales"></table>
+      <div class="note">The current 3M effective-stake cap binds at ~4.5M raw stake — only Binance is above that line. Carrying it forward cuts Binance &minus;46% while peers take ~&minus;30%. A pool-share ceiling spreads the load; the ceiling level is the dial.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Combined income (subsidy + delegation) as the move phases in — median validator</h2>
+      <table id="tbl_combined"></table>
+      <div class="note">Delegation moves 7.5% of the pool per Steward cycle until the target is reached. New subsidy rates apply from cycle 1 while delegation losses ramp — the memo's sequencing keeps the small brackets near-flat for ~6 weeks. Memo target at completion: <b>&minus;9% to &minus;11%</b> for all brackets below 1.5M.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Delegation rollout — steward cycles &rarr; epochs &rarr; calendar time</h2>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+        <button id="btnPlay" class="playbtn">&#9654; Play rollout</button>
+        <button id="btnReset" class="playbtn alt">&#8634; Reset</button>
+        <input type="range" id="p_scrub" min="0" max="1000" step="1" value="0" style="flex:1;min-width:160px">
+      </div>
+      <div id="chart_roll"></div>
+      <div class="legend">
+        <span style="--c:#5b8cff">Delegation moved (% of pool, left axis)</span>
+        <span style="--c:#39d98a">JitoSOL yield (right axis)</span>
+        <span style="--c:#ffb454">0/0 ceiling clears at 15% (5.22%)</span>
+        <span style="--c:#2b3a5e">Projected path (not yet reached)</span>
+      </div>
+      <div class="rollstats" id="rollReadout"></div>
+      <div class="note">Each Steward cycle = 10 Solana epochs &asymp; 20.9 days (at ~2.09-day epochs). The Steward moves at most 7.5% of the pool per cycle, so a 25% move takes 4 cycles &mdash; ~12 weeks, inside Q4 2026 (epochs 1042&ndash;1085). Yield uses the memo's +0.6bp per 1% moved from the 5.13% baseline. Play continues past the move into the wind-down phase.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Validator economics through the full programme &mdash; delegation vs revenue</h2>
+      <div id="chart_econ"></div>
+      <div class="legend">
+        <span style="--c:#5b8cff">JitoSOL delegation held by validators (left axis, SOL)</span>
+        <span style="--c:#ffb454">Total validator revenue: subsidy pool + delegation income (right axis, $/mo)</span>
+      </div>
+      <div class="note">The whole deal on one canvas: delegation steps down during the move (permanent, unless TVL growth restores it), while total validator revenue holds through the full-rate quarter(s) and then decays with the subsidy. The gap between the two lines' end-states is what TVL growth and BAM fee income must eventually replace. Shares the play/scrub controls above.</div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>Timing strategies &mdash; how the programme ends</h2>
+      <div class="presets">
+        <button data-preset="memotiming" onclick="applyPreset('memotiming')">Memo schedule</button>
+        <button data-preset="slowtaper" onclick="applyPreset('slowtaper')">Slow taper</button>
+        <button data-preset="fastexit" onclick="applyPreset('fastexit')">Fast exit</button>
+      </div>
+      <div class="note" id="timingDesc" style="margin-top:8px"></div>
+    </div>
+
+    <div class="charts" style="margin-top:16px">
+      <div class="card">
+        <h2>Wind-down: % of revenue to subsidy per epoch</h2>
+        <div id="chart_decay"></div>
+      </div>
+      <div class="card">
+        <h2>Cumulative programme spend</h2>
+        <div id="chart_spend"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  Validator set is <b>synthetic</b>: 357 validators generated deterministically and calibrated to the memo's bracket aggregates (counts, total stake, delegation, medians). Known whales (Binance 12.25M, iZADA 3.60M, OKX 3.27M, Kraken 3.02M) are exact. Dollar figures float with the pool slider. Replace <code>buildValidators()</code> with a live StakeNet feed when mounting on the website.
+</footer>
+
+<script>
+"use strict";
+/* ================= synthetic validator set ================= */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const BRACKETS=[
+  {name:"50–100K",  lo:50e3,  hi:100e3,  n:83,  totalStake:6.585e6,  holders:70,  deleg:2.00e6},
+  {name:"100–250K", lo:100e3, hi:250e3,  n:178, totalStake:27.63e6,  holders:160, deleg:5.30e6},
+  {name:"250–500K", lo:250e3, hi:500e3,  n:39,  totalStake:12.49e6,  holders:32,  deleg:1.25e6},
+  {name:"500K–1.5M",lo:500e3, hi:1.5e6,  n:33,  totalStake:27.99e6,  holders:24,  deleg:0.57e6},
+  {name:">1.5M",    lo:1.5e6, hi:12.25e6,n:24,  totalStake:67.62e6,  holders:4,   deleg:0.04e6},
+];
+const WHALES=[{name:"Binance",s:12.25e6},{name:"iZADA",s:3.60e6},{name:"OKX Earn",s:3.27e6},{name:"Kraken",s:3.02e6}];
+const DELEG_INCOME_PER_SOL=0.0314;      // $/SOL/month of JitoSOL delegation income (memo: ~$72k/mo per 2.29M SOL moved)
+const SUB50K={count:21,deleg:307e3};    // sub-50K blind spot cohort
+const EPOCHS_PER_MONTH=30.44/2.09;      // ~14.56
+const TOTAL_DELEG=9.16e6;               // total JitoSOL delegation (memo snapshot)
+const EPOCH_DAYS=2.09, EPOCH0=1042;     // Q4 2026 start: epoch 1042 ≈ 30 Sep 2026
+
+function buildValidators(){
+  const rnd=mulberry32(1337), vals=[];
+  BRACKETS.forEach((b,bi)=>{
+    let stakes=[];
+    if(bi===4){
+      stakes=WHALES.map(w=>w.s);
+      const rest=20, target=b.totalStake-stakes.reduce((a,x)=>a+x,0);
+      let gen=[]; for(let i=0;i<rest;i++) gen.push(1.6e6+rnd()*1.4e6);
+      const sc=target/gen.reduce((a,x)=>a+x,0);
+      gen=gen.map(x=>Math.max(1.5e6,x*sc));
+      stakes=stakes.concat(gen);
+    }else{
+      // sample u^k on a log-uniform grid; solve k so bracket mean matches target
+      const us=[]; for(let i=0;i<b.n;i++) us.push(rnd());
+      const mean=k=>us.reduce((a,u)=>a+b.lo*Math.pow(b.hi/b.lo,Math.pow(u,k)),0)/b.n;
+      const target=b.totalStake/b.n;
+      let klo=0.05,khi=8;
+      for(let i=0;i<60;i++){const km=(klo+khi)/2;(mean(km)>target)?(klo=km):(khi=km);}
+      const k=(klo+khi)/2;
+      stakes=us.map(u=>b.lo*Math.pow(b.hi/b.lo,Math.pow(u,k)));
+    }
+    stakes.sort((a,x)=>x-a);
+    const perHolder=b.deleg/b.holders;
+    stakes.forEach((s,i)=>{
+      vals.push({bracket:bi, stake:s, deleg:i<b.holders?perHolder:0,
+        name:(bi===4&&i<4)?WHALES[i].name:null});
+    });
+  });
+  return vals;
+}
+const V=buildValidators();
+
+/* ================= mechanism ================= */
+function effStake(s,p){
+  const band=Math.min(p.band,p.infl);
+  let e=Math.min(s,band)
+       +Math.max(0,Math.min(s,p.infl)-band)*p.mid
+       +Math.max(0,s-p.infl)*p.top;
+  if(p.capType==="eff") e=Math.min(e,p.effCap);
+  return e;
+}
+// shares with optional pool-share ceiling (iterative water-filling)
+function computeShares(effs,p){
+  const n=effs.length;
+  let shares=new Array(n).fill(0);
+  const tot=effs.reduce((a,x)=>a+x,0);
+  if(tot<=0) return shares;
+  shares=effs.map(e=>e/tot);
+  if(p.capType!=="share") return shares;
+  const c=p.ceiling;
+  for(let iter=0;iter<50;iter++){
+    let over=false, capped=0, freeEff=0;
+    const isCap=new Array(n).fill(false);
+    // fix point: repeatedly cap and redistribute
+    let cappedSet=shares.map(s=>s>c+1e-12);
+    if(!cappedSet.some(x=>x)) break;
+    const nCap=cappedSet.filter(x=>x).length;
+    const remain=1-nCap*c;
+    const freeTot=effs.reduce((a,e,i)=>a+(cappedSet[i]?0:e),0);
+    shares=effs.map((e,i)=>cappedSet[i]?c:(freeTot>0?e/freeTot*remain:0));
+    // check for newly-over entries next loop
+    if(!shares.some((s,i)=>!cappedSet[i]&&s>c+1e-12)) break;
+  }
+  return shares;
+}
+function runMechanism(p){
+  const effs=V.map(v=>effStake(v.stake,p));
+  const carve=p.carve;                       // fraction of pool reserved sub-50K
+  const mainPool=p.pool*(p.pf||1)*(1-carve);
+  const shares=computeShares(effs,p);
+  const checks=shares.map(s=>s*mainPool);
+  return {shares,checks,effs};
+}
+const CURRENT={band:1.5e6,mid:1.0,infl:1.5e6,top:0.5,capType:"eff",effCap:3e6,ceiling:0.02,pool:338231,carve:0};
+
+/* ================= helpers ================= */
+const fm$=x=>"$"+Math.round(x).toLocaleString("en-US");
+const fmK=x=>x>=1e6?(x/1e6).toFixed(2).replace(/\.?0+$/,"")+"M":Math.round(x/1e3)+"K";
+const fmPct=(x,d=1)=>(x*100).toFixed(d)+"%";
+const fmD=(x,d=0)=>{const s=(x*100).toFixed(d);return (x>0?"+":"")+s+"%";};
+const cls=x=>x>0.005?"pos":x<-0.005?"neg":"neu";
+const median=a=>{const s=[...a].sort((x,y)=>x-y);const m=s.length>>1;return s.length%2?s[m]:(s[m-1]+s[m])/2;};
+function bracketStats(res){
+  return BRACKETS.map((b,bi)=>{
+    const idx=V.map((v,i)=>v.bracket===bi?i:-1).filter(i=>i>=0);
+    const tot=idx.reduce((a,i)=>a+res.checks[i],0);
+    const share=idx.reduce((a,i)=>a+res.shares[i],0);
+    const med=median(idx.map(i=>res.checks[i]));
+    const per1k=tot/(b.totalStake/1000);
+    return {tot,share,med,per1k};
+  });
+}
+
+/* ================= params / UI state ================= */
+const P={band:100e3,mid:0.6,infl:1.5e6,top:0.1,capType:"share",ceiling:0.02,effCap:3e6,
+         pool:338231,move:0.25,carve:0, flatQ:1,half:10,dur:87, price:90,pf:1};
+
+const PRESETS={
+  flat:{label:"Flat per-SOL",band:0,mid:100,infl:4000,top:100,cap:"none",ceil:20,effcap:3000,carve:0,flatq:1,half:10,dur:87,
+    desc:"The 'do nothing clever' reference point: every SOL earns the same rate, no cap. Maximum simplicity — and maximum concentration. Whales take even more than today (Binance alone would clear ~$25k/mo), while small validators' checks shrink. Useful to show why any curve exists at all: without one, the subsidy is a whale-payment programme."},
+  current:{label:"JIP-31 (current formula)",band:1500,mid:100,infl:1500,top:50,cap:"eff",effcap:3000,carve:0,ceil:20,flatq:1,half:10,dur:87,
+    desc:"The live mechanism: 1.0× on the first 1.5M SOL, 0.5× above, capped at 3M effective stake. In practice near-flat per SOL below 1.5M (~$2.7 per 1,000 SOL), which is why ~40% of the pool lands with 24 validators — including 20 whales holding zero JitoSOL who lose nothing from the delegation move. This is the baseline every Δ column compares against."},
+  memo:{label:"Memo proposal",band:100,mid:60,infl:1500,top:10,cap:"share",ceil:20,effcap:3000,carve:0,flatq:1,half:10,dur:87,
+    desc:"The proposed design. Full rate only on the first 100K (a flat floor everyone receives), 0.6× on the 100K–1.5M band, 0.1× above, and a 2% pool-share ceiling replacing the stake cap. Shifts ~9pp of the pool to small/mid validators: sub-100K medians +50%, 100–250K +29%, 250K–1.5M roughly flat, whales −24% with Binance at −19% (vs −46% under a carried-over stake cap). Q4 full rate, then halving every 10 epochs."},
+  smallmax:{label:"Small-validator max",band:250,mid:40,infl:1500,top:0,cap:"share",ceil:10,effcap:3000,carve:15,flatq:1,half:10,dur:87,
+    desc:"Redistribution pushed to the limit: 250K full-rate band, 0.4× mid, zero credit above 1.5M, 1% ceiling, plus the sub-50K carve-out. Small validators gain the most possible — but the 24 whales are near-zeroed. They hold 42%+ of top-end BAM stake and treat the check as a courtesy; zeroing it is a cheap-looking, expensive-in-practice signal. Shows where 'help the little guy' stops being free."},
+  whalesoft:{label:"Whale-gentle",band:500,mid:80,infl:1500,top:30,cap:"share",ceil:40,effcap:3000,carve:0,flatq:1,half:10,dur:87,
+    desc:"The negotiation fallback if the top end pushes back hard: 500K full-rate band, 0.8× mid, 0.3× top, 4% ceiling. Whale cuts shrink to single digits — but so does the redistribution: small-validator gains drop to roughly +10–15%, weakening the story that the subsidy offsets the delegation move for those who bear it most. Trade-off made visible: every point conceded to whales comes out of the pivotal 100–250K bracket."},
+  stakecap:{label:"Carry-over stake cap",band:100,mid:60,infl:1500,top:10,cap:"eff",effcap:3000,ceil:20,carve:0,flatq:1,half:10,dur:87,
+    desc:"The counterfactual the memo rejects: the new curve but keeping the old 3M effective-stake cap instead of the 2% ceiling. Watch the whale table — Binance takes ~−46% while its smaller peers take ~−30%: a single-name rule in practice, and a hostile signal to the one validator holding more BAM stake (8.5%) than the next three whales combined. This is why the pool-share ceiling exists."},
+  optionc:{label:"Option C package",band:100,mid:60,infl:1500,top:10,cap:"share",ceil:20,effcap:3000,carve:15,flatq:1,half:10,dur:87,
+    desc:"The memo design plus the 1.5% sub-50K carve-out (Draft Option C). The 21 BAM validators below the 50K eligibility floor hold ~307K SOL of delegation and lose ~$2.4k/mo with no channel under the memo design; 1.5% of the pool (~$5k/mo) covers them with headroom, costing every other bracket ~0.1–0.3pp. The cheapest reputational insurance in the whole design."},
+  memotiming:{label:"Memo schedule",timing:true,flatq:1,half:10,dur:87,
+    desc:"The proposed schedule: Q4 2026 at 100% of revenue (alongside the delegation move, when retention risk peaks), then from E₀ the rate halves every 10 epochs — one steward cycle — ending at ~0.3% by the last epoch of Q2 2027. Three-quarters of the ~$1.37M total lands in Q4; the taper is effectively complete inside Q1."},
+  slowtaper:{label:"Slow taper",timing:true,flatq:1,half:20,dur:120,
+    desc:"Softer landing: half-life doubled to 20 epochs and the decay run out to ~8 months. Roughly doubles decay-phase spend and keeps checks meaningful well into 2027 — friendlier optics with validators, but delays the return of revenue to the DAO and re-opens the 'when does it actually end?' question the fixed schedule was meant to close."},
+  fastexit:{label:"Fast exit",timing:true,flatq:0,half:6,dur:50,
+    desc:"The cheapest path: no full-rate quarter, halving every 6 epochs. Saves ~$1M+ versus the memo — but removes the Q4 cushion in the exact window the delegation move lands, when retention risk and competitor re-pitching peak. The memo pays for Q4 deliberately: compensating power is already down ~4× in six months."},
+};
+let activePreset=null, activeTiming="memotiming";
+function applyPreset(k){
+  const q=PRESETS[k];
+  if(q.timing){
+    id("p_flatq").value=q.flatq; id("p_half").value=q.half; id("p_dur").value=q.dur;
+    activeTiming=k; readParams(); render(); return;
+  }
+  id("p_band").value=q.band; id("p_mid").value=q.mid; id("p_infl").value=q.infl;
+  id("p_top").value=q.top; id("p_ceil").value=q.ceil; id("p_effcap").value=q.effcap;
+  id("p_carve").value=q.carve;
+  setCap(q.cap); activePreset=k; readParams(); render();
+}
+function presetBanner(){
+  document.querySelectorAll(".presets button").forEach(b=>b.classList.toggle("sel",b.dataset.preset===activePreset||b.dataset.preset===activeTiming));
+  if(activePreset){id("presetName").textContent=PRESETS[activePreset].label; id("presetDesc").textContent=PRESETS[activePreset].desc;}
+  else{id("presetName").textContent="Custom settings"; id("presetDesc").textContent="You have moved off the named strategies — the tables and charts below reflect your custom parameters. Select a preset to return to a documented strategy.";}
+  id("timingDesc").innerHTML=activeTiming?"<b>"+PRESETS[activeTiming].label+":</b> "+PRESETS[activeTiming].desc:
+    "<b>Custom schedule:</b> you have moved off the named timing strategies — the wind-down charts and programme totals reflect your custom full-rate/half-life/duration settings.";
+}
+const id=x=>document.getElementById(x);
+function setCap(c){
+  P.capType=c;
+  document.querySelectorAll("#capToggle button").forEach(b=>b.classList.toggle("on",b.dataset.cap===c));
+  id("ctl_ceiling").style.display=c==="share"?"":"none";
+  id("ctl_effcap").style.display=c==="eff"?"":"none";
+}
+document.querySelectorAll("#capToggle button").forEach(b=>b.onclick=()=>{setCap(b.dataset.cap);render();});
+function readParams(){
+  P.band=+id("p_band").value*1e3;
+  P.pool=+id("p_pool").value;
+  P.price=+id("p_price").value;
+  P.pf=P.price/90;
+  P.mid=+id("p_mid").value/100;
+  P.infl=+id("p_infl").value*1e3;
+  P.top=+id("p_top").value/100;
+  P.ceiling=+id("p_ceil").value/1000;
+  P.effCap=+id("p_effcap").value*1e3;
+  P.move=+id("p_move").value/100;
+  P.carve=+id("p_carve").value/1000;
+  P.flatQ=+id("p_flatq").value;
+  P.half=+id("p_half").value;
+  P.dur=+id("p_dur").value;
+}
+function labels(){
+  id("v_band").textContent=fmK(P.band)+" SOL";
+  id("v_mid").textContent=P.mid.toFixed(2)+"×";
+  id("v_infl").textContent=fmK(P.infl)+" SOL";
+  id("v_top").textContent=P.top.toFixed(2)+"×";
+  id("v_ceil").textContent=(P.ceiling*100).toFixed(1)+"% of pool";
+  id("v_effcap").textContent=fmK(P.effCap)+" SOL";
+  id("v_pool").textContent=fm$(P.pool)+"/mo";
+  id("v_price").textContent="$"+P.price;
+  id("note_price").innerHTML=P.price===90?"Baseline ($90). All $ figures shown at this price.":
+    "Effective pool at $"+P.price+": <b>"+fm$(P.pool*P.pf)+"/mo</b> (&times;"+P.pf.toFixed(2)+"). Delegation income scales identically — &Delta;% columns unchanged.";
+  id("v_move").textContent=(P.move*100).toFixed(0)+"% (~"+fmK(P.move*TOTAL_DELEG)+" SOL)";
+  const midInert=P.band>=P.infl;
+  id("inert_mid").style.display=midInert?"":"none";
+  id("p_mid").classList.toggle("inert",midInert);
+  const inflInert=Math.abs(P.mid-P.top)<1e-9&&!midInert;
+  id("inert_infl").style.display=inflInert?"":"none";
+  id("p_infl").classList.toggle("inert",inflInert);
+  id("v_carve").textContent=(P.carve*100).toFixed(1)+"% of pool";
+  id("v_flatq").textContent=P.flatQ+" quarter"+(P.flatQ===1?"":"s")+" (~"+(P.flatQ*44)+" epochs)";
+  id("v_half").textContent=P.half+" epochs (~"+(P.half*2.09/7).toFixed(1)+" wks)";
+  id("v_dur").textContent=P.dur+" epochs (~"+(P.dur*2.09/30.44).toFixed(1)+" months)";
+}
+const TIMING_IDS=new Set(["p_flatq","p_half","p_dur"]);
+document.querySelectorAll("input[type=range]:not(#p_scrub)").forEach(r=>r.addEventListener("input",()=>{
+  if(TIMING_IDS.has(r.id))activeTiming=null; else activePreset=null;
+  readParams();render();}));
+
+/* ================= charts (hand-rolled SVG) ================= */
+function svgOpen(w,h){return {w,h,parts:[`<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">`]};}
+function svgClose(s){s.parts.push("</svg>");return s.parts.join("");}
+function line(s,x1,y1,x2,y2,cl,st){s.parts.push(`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${cl||''}" style="${st||''}"/>`);}
+function txt(s,x,y,t,anchor,st){s.parts.push(`<text x="${x}" y="${y}" class="ticktext" text-anchor="${anchor||'middle'}" style="${st||''}">${t}</text>`);}
+function path(s,d,st){s.parts.push(`<path d="${d}" fill="none" style="${st}"/>`);}
+function rect(s,x,y,w,h,st){s.parts.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" style="${st}"/>`);}
+function circ(s,x,y,r,st){s.parts.push(`<circle cx="${x}" cy="${y}" r="${r}" style="${st}"/>`);}
+
+function chartCurve(){
+  const W=520,H=300,mL=52,mR=14,mT=12,mB=34,s=svgOpen(W,H);
+  const xMax=13e6, yMax=Math.max(3.2e6, effStake(xMax,P)*1.05, effStake(xMax,CURRENT)*1.05);
+  const X=v=>mL+(v/xMax)*(W-mL-mR), Y=v=>H-mB-(v/yMax)*(H-mT-mB);
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");txt(s,mL-6,yy+3,fmK(yMax*(1-g/4)),"end");}
+  [0,3e6,6e6,9e6,12e6].forEach(v=>{txt(s,X(v),H-mB+14,fmK(v));});
+  txt(s,W/2,H-4,"raw stake (SOL)"); 
+  line(s,mL,mT,mL,H-mB,"axis"); line(s,mL,H-mB,W-mR,H-mB,"axis");
+  const mk=(p,st)=>{let d="";for(let i=0;i<=260;i++){const x=xMax*i/260,e=effStake(x,p);d+=(i?"L":"M")+X(x).toFixed(1)+" "+Y(Math.min(e,yMax)).toFixed(1)+" ";}path(s,d,st);};
+  mk(CURRENT,"stroke:#5f6b85;stroke-width:1.6;stroke-dasharray:5 4");
+  mk(P,"stroke:#5b8cff;stroke-width:2.2");
+  V.forEach(v=>{if(v.stake<=xMax)circ(s,X(v.stake),Y(Math.min(effStake(v.stake,P),yMax)),v.name?3.5:2,"fill:#39d98a;opacity:"+(v.name?0.95:0.45));});
+  WHALES.forEach(w=>{txt(s,X(w.s),Y(Math.min(effStake(w.s,P),yMax))-8,w.name,"middle","fill:#8b93a7");});
+  id("chart_curve").innerHTML=svgClose(s);
+}
+function chartShare(cur,neo){
+  const W=520,H=300,mL=52,mR=14,mT=12,mB=44,s=svgOpen(W,H);
+  const yMax=Math.max(...cur.map(b=>b.share),...neo.map(b=>b.share))*1.15;
+  const Y=v=>H-mB-(v/yMax)*(H-mT-mB);
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");txt(s,mL-6,yy+3,fmPct(yMax*(1-g/4),0),"end");}
+  line(s,mL,mT,mL,H-mB,"axis"); line(s,mL,H-mB,W-mR,H-mB,"axis");
+  const bw=(W-mL-mR)/5;
+  BRACKETS.forEach((b,i)=>{
+    const cx=mL+bw*i+bw/2;
+    rect(s,cx-26,Y(cur[i].share),24,H-mB-Y(cur[i].share),"fill:#5f6b85");
+    rect(s,cx+2,Y(neo[i].share),24,H-mB-Y(neo[i].share),"fill:#5b8cff");
+    txt(s,cx,H-mB+14,b.name);
+    txt(s,cx+14,Y(neo[i].share)-5,fmPct(neo[i].share,1),"middle","fill:#cfe0ff");
+  });
+  id("chart_share").innerHTML=svgClose(s);
+}
+function decaySchedule(){
+  const flat=P.flatQ*44, perEpoch=P.pool*P.pf/EPOCHS_PER_MONTH;
+  const rates=[],paid=[];let cum=0;
+  for(let e=0;e<flat+P.dur;e++){
+    const r=e<flat?1:Math.pow(0.5,(e-flat)/P.half);
+    rates.push(r); cum+=r*perEpoch; paid.push(cum);
+  }
+  return {rates,paid,perEpoch,flat};
+}
+function chartDecay(sc){
+  const W=520,H=260,mL=48,mR=14,mT=12,mB=34,s=svgOpen(W,H);
+  const n=sc.rates.length,X=i=>mL+(i/(n-1))*(W-mL-mR),Y=v=>H-mB-v*(H-mT-mB);
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");txt(s,mL-6,yy+3,(100*(1-g/4)).toFixed(0)+"%","end");}
+  line(s,mL,mT,mL,H-mB,"axis");line(s,mL,H-mB,W-mR,H-mB,"axis");
+  let d="";sc.rates.forEach((r,i)=>{d+=(i?"L":"M")+X(i).toFixed(1)+" "+Y(r).toFixed(1)+" ";});
+  path(s,d,"stroke:#39d98a;stroke-width:2.2");
+  if(sc.flat>0){line(s,X(sc.flat),mT,X(sc.flat),H-mB,"gridline");txt(s,X(sc.flat),mT+10,"decay starts (E₀)","middle","fill:#ffb454");}
+  [0,0.25,0.5,0.75,1].forEach(f=>{const i=Math.round(f*(n-1));txt(s,X(i),H-mB+14,"e+"+i);});
+  txt(s,W/2,H-4,"epochs from programme start");
+  id("chart_decay").innerHTML=svgClose(s);
+}
+function chartSpend(sc){
+  const W=520,H=260,mL=60,mR=14,mT=12,mB=34,s=svgOpen(W,H);
+  const n=sc.paid.length,tot=sc.paid[n-1],X=i=>mL+(i/(n-1))*(W-mL-mR),Y=v=>H-mB-(v/tot)*(H-mT-mB);
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");txt(s,mL-6,yy+3,"$"+(tot*(1-g/4)/1e6).toFixed(2)+"M","end");}
+  line(s,mL,mT,mL,H-mB,"axis");line(s,mL,H-mB,W-mR,H-mB,"axis");
+  let d="";sc.paid.forEach((v,i)=>{d+=(i?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)+" ";});
+  path(s,d,"stroke:#5b8cff;stroke-width:2.2");
+  if(sc.flat>0){line(s,X(sc.flat),mT,X(sc.flat),H-mB,"gridline");
+    txt(s,X(sc.flat)+4,Y(sc.paid[sc.flat])-6,"full-rate: $"+(sc.paid[Math.max(0,sc.flat-1)]/1e6).toFixed(2)+"M","start","fill:#ffb454");}
+  [0,0.25,0.5,0.75,1].forEach(f=>{const i=Math.round(f*(n-1));txt(s,X(i),H-mB+14,"e+"+i);});
+  txt(s,W/2,H-4,"epochs from programme start");
+  id("chart_spend").innerHTML=svgClose(s);
+}
+
+/* ================= render ================= */
+function render(){
+  labels();
+  const cur=runMechanism(CURRENT_AT_POOL());
+  const neo=runMechanism(P);
+  const curB=bracketStats(cur), neoB=bracketStats(neo);
+
+  /* bracket table */
+  let h=`<tr><th>Bracket</th><th>Eligible</th><th>Share of pool</th><th>&Delta; share</th><th>Bracket total</th><th>Median check</th><th>&Delta; check</th><th>$ / 1,000 SOL</th></tr>`;
+  BRACKETS.forEach((b,i)=>{
+    const ds=neoB[i].share-curB[i].share, dc=curB[i].med>0?(neoB[i].med/curB[i].med-1):0;
+    h+=`<tr><td>${b.name}</td><td>${b.n}</td><td>${fmPct(neoB[i].share)}</td>
+    <td class="${cls(ds)}">${(ds>0?"+":"")+(ds*100).toFixed(1)}pp</td>
+    <td>${fm$(neoB[i].tot)}</td><td>${fm$(neoB[i].med)}</td>
+    <td class="${cls(dc)}">${fmD(dc)}</td><td>$${neoB[i].per1k.toFixed(2)}</td></tr>`;
+  });
+  const totShare=neoB.reduce((a,x)=>a+x.share,0);
+  h+=`<tr><td><b>Total</b></td><td>357</td><td>${fmPct(totShare)}</td><td></td><td>${fm$(neoB.reduce((a,x)=>a+x.tot,0))}</td><td></td><td></td><td>$${(neoB.reduce((a,x)=>a+x.tot,0)/(BRACKETS.reduce((a,b)=>a+b.totalStake,0)/1000)).toFixed(2)}</td></tr>`;
+  id("tbl_brackets").innerHTML=h;
+
+  /* carve-out note */
+  if(P.carve>0){
+    const carve$=P.pool*P.pf*P.carve, loss=SUB50K.deleg*P.move*delegRate();
+    id("note_carve").innerHTML=`Sub-50K carve-out: <b>${fm$(carve$)}/mo</b> reserved for ${SUB50K.count} sub-50K validators holding ~307K SOL delegation, vs their <b>${fm$(loss)}/mo</b> delegation loss at the current move setting — ${carve$>=loss?'<span class="flag ok">covered</span>':'<span class="flag risk">shortfall</span>'}. Funded from within the pool (${fmPct(P.carve)} off every other bracket).`;
+  } else {
+    const loss=SUB50K.deleg*P.move*delegRate();
+    id("note_carve").innerHTML=`Sub-50K blind spot: 21 BAM validators below the eligibility floor lose <b>${fm$(loss)}/mo</b> at the current move setting with <span class="flag warn">no compensation channel</span>. Raise the carve-out slider to model Option C.`;
+  }
+
+  /* whales */
+  let w=`<tr><th>Validator</th><th>Stake</th><th>Current check</th><th>Proposed check</th><th>Change</th><th>% of pool</th><th>Status</th></tr>`;
+  WHALES.forEach((wh,k)=>{
+    const i=V.findIndex(v=>v.name===wh.name);
+    const c0=cur.checks[i],c1=neo.checks[i],d=c0>0?c1/c0-1:0,sh=neo.shares[i];
+    const at=P.capType==="share"&&Math.abs(sh-P.ceiling)<1e-6;
+    w+=`<tr><td>${wh.name}</td><td>${fmK(wh.s)}</td><td>${fm$(c0)}</td><td>${fm$(c1)}</td>
+    <td class="${cls(d)}">${fmD(d)}</td><td>${fmPct(sh,2)}</td>
+    <td>${at?'<span class="flag warn">at ceiling</span>':'<span class="flag ok">below cap</span>'}</td></tr>`;
+  });
+  id("tbl_whales").innerHTML=w;
+
+  /* combined income */
+  const nCycles=Math.ceil(P.move/0.075+1e-9);
+  let cb=`<tr><th>Bracket</th><th>Median today</th>`;
+  for(let c=1;c<=Math.max(nCycles,1);c++) cb+=`<th>Cycle ${c} (${Math.min(c*7.5,P.move*100).toFixed(1)}%)</th>`;
+  cb+=`</tr>`;
+  BRACKETS.forEach((b,bi)=>{
+    const idx=V.map((v,i)=>v.bracket===bi?i:-1).filter(i=>i>=0);
+    const today=median(idx.map(i=>cur.checks[i]+V[i].deleg*delegRate()));
+    cb+=`<tr><td>${b.name}</td><td>${fm$(today)}</td>`;
+    for(let c=1;c<=Math.max(nCycles,1);c++){
+      const moved=Math.min(c*0.075,P.move);
+      const inc=median(idx.map(i=>neo.checks[i]+V[i].deleg*(1-moved)*delegRate()));
+      const d=today>0?inc/today-1:0;
+      cb+=`<td class="${cls(d)}">${fm$(inc)} <span style="opacity:.75">(${fmD(d)})</span></td>`;
+    }
+    cb+=`</tr>`;
+  });
+  id("tbl_combined").innerHTML=cb;
+
+  /* wind-down */
+  const sc=decaySchedule();
+  const flatSpend=sc.flat>0?sc.paid[sc.flat-1]:0, total=sc.paid[sc.paid.length-1];
+  id("s_total").textContent="$"+(total/1e6).toFixed(2)+"M";
+  id("s_decay").textContent="$"+((total-flatSpend)/1e3).toFixed(0)+"k";
+  id("s_decayd").textContent="over "+P.dur+" epochs, half-life "+P.half;
+  const dSmall=curB[0].med>0?neoB[0].med/curB[0].med-1:0;
+  const dPivot=curB[1].med>0?neoB[1].med/curB[1].med-1:0;
+  id("s_small").textContent=fmD(dSmall); id("s_small").className="v "+cls(dSmall);
+  id("s_pivot").textContent=fmD(dPivot); id("s_pivot").className="v "+cls(dPivot);
+  const bi=V.findIndex(v=>v.name==="Binance");
+  const db=cur.checks[bi]>0?neo.checks[bi]/cur.checks[bi]-1:0;
+  id("s_binance").textContent=fm$(neo.checks[bi]);
+  id("s_binanced").textContent=fmD(db)+" vs current formula";
+  id("s_whale").textContent=fmPct(neoB[4].share);
+
+  chartCurve(); chartShare(curB,neoB); chartDecay(sc); chartSpend(sc);
+  ROLL.t=Math.min(ROLL.t,horizonCycles()); chartRoll(); chartEcon(); presetBanner();
+}
+function CURRENT_AT_POOL(){return Object.assign({},CURRENT,{pool:P.pool,pf:P.pf,carve:0});}
+const delegRate=()=>DELEG_INCOME_PER_SOL*P.pf;   // $/SOL/mo at current SOL price
+
+/* ================= delegation rollout animation ================= */
+const ROLL={t:0,playing:false,last:0,speed:0.45}; // t in cycles
+function rollCycles(){return Math.max(1,Math.ceil(P.move/0.075-1e-9));}
+function horizonCycles(){return Math.max(rollCycles(),(P.flatQ*44+P.dur)/10);}
+function subsidyRateAt(t){const e=t*10,flat=P.flatQ*44;return e<flat?1:Math.pow(0.5,(e-flat)/P.half);}
+function movedAt(t){return Math.max(0,Math.min(t*0.075,P.move));}
+function yieldAt(m){return 5.13+m*100*0.006;}
+function dateAt(t){const d=new Date(2026,8,30);d.setDate(d.getDate()+Math.round(t*10*EPOCH_DAYS));
+  return d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"2-digit"});}
+function chartRoll(){
+  const W=1060,H=320,mL=56,mR=64,mT=16,mB=54,s=svgOpen(W,H);
+  const N=rollCycles(), tMax=N+0.4;
+  const yMaxPct=Math.max(30,P.move*100*1.2);
+  const X=t=>mL+(t/tMax)*(W-mL-mR);
+  const YL=v=>H-mB-(v/yMaxPct)*(H-mT-mB);                      // left: % moved
+  const yLo=5.12,yHi=Math.max(5.32,yieldAt(P.move)+0.02);
+  const YR=v=>H-mB-((v-yLo)/(yHi-yLo))*(H-mT-mB);              // right: yield
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");
+    txt(s,mL-6,yy+3,(yMaxPct*(1-g/4)).toFixed(0)+"%","end");
+    txt(s,W-mR+6,yy+3,(yLo+(yHi-yLo)*(1-g/4)).toFixed(2)+"%","start","fill:#39d98a");}
+  line(s,mL,mT,mL,H-mB,"axis");line(s,W-mR,mT,W-mR,H-mB,"axis");line(s,mL,H-mB,W-mR,H-mB,"axis");
+  // triple x-axis: cycle / epoch / date
+  for(let c=0;c<=N;c++){
+    const x=X(c); line(s,x,H-mB,x,H-mB+4,"axis");
+    txt(s,x,H-mB+15,c===0?"start":"C"+c);
+    txt(s,x,H-mB+28,"ep "+(EPOCH0+c*10),"middle","fill:#5f6b85");
+    txt(s,x,H-mB+41,dateAt(c),"middle","fill:#5f6b85");
+  }
+  // reference lines: ceiling-clear (15%) and target
+  if(15<=yMaxPct){line(s,mL,YL(15),W-mR,YL(15),"","stroke:#ffb454;stroke-width:1;stroke-dasharray:4 4");
+    txt(s,mL+6,YL(15)-4,"15% — clears the 0/0 ceiling (5.22%)","start","fill:#ffb454");}
+  line(s,mL,YL(P.move*100),W-mR,YL(P.move*100),"","stroke:#5b8cff;stroke-width:1;stroke-dasharray:2 4");
+  txt(s,W-mR-6,YL(P.move*100)-4,"target "+(P.move*100).toFixed(0)+"%","end","fill:#5b8cff");
+  // full paths (dim), then progress paths (bright) up to ROLL.t
+  const mk=(tEnd,stMoved,stYield)=>{
+    let d1="",d2="";const steps=160;
+    for(let i=0;i<=steps;i++){const t=tEnd*i/steps,m=movedAt(t);
+      d1+=(i?"L":"M")+X(t).toFixed(1)+" "+YL(m*100).toFixed(1)+" ";
+      d2+=(i?"L":"M")+X(t).toFixed(1)+" "+YR(yieldAt(m)).toFixed(1)+" ";}
+    path(s,d1,stMoved); path(s,d2,stYield);
+  };
+  mk(tMax,"stroke:#2b3a5e;stroke-width:2","stroke:#1f4736;stroke-width:2");
+  if(ROLL.t>0) mk(Math.min(ROLL.t,tMax),"stroke:#5b8cff;stroke-width:2.6","stroke:#39d98a;stroke-width:2.6");
+  // marker (clamped to this chart's horizon)
+  const tm=Math.min(ROLL.t,tMax), m=movedAt(tm);
+  line(s,X(tm),mT,X(tm),H-mB,"","stroke:#e6e9ef;stroke-width:1;opacity:.35");
+  circ(s,X(tm),YL(m*100),5,"fill:#5b8cff;stroke:#0b0e14;stroke-width:2");
+  circ(s,X(tm),YR(yieldAt(m)),5,"fill:#39d98a;stroke:#0b0e14;stroke-width:2");
+  id("chart_roll").innerHTML=svgClose(s);
+  // readout
+  const mNow=movedAt(ROLL.t);
+  const cyc=Math.min(Math.ceil(ROLL.t+1e-9),rollCycles());
+  const ep=Math.round(EPOCH0+ROLL.t*10);
+  const y=yieldAt(mNow), sr=subsidyRateAt(ROLL.t);
+  id("rollReadout").innerHTML=
+    `<div>Cycle <b>${ROLL.t<=0?"—":(ROLL.t<=rollCycles()?cyc+" / "+rollCycles():"move complete")}</b></div>`+
+    `<div>Epoch <b>~${ep}</b></div>`+
+    `<div>Date <b>${dateAt(ROLL.t)}</b></div>`+
+    `<div>Moved <b>${(mNow*100).toFixed(1)}%</b> (${fmK(mNow*TOTAL_DELEG)} SOL)</div>`+
+    `<div>JitoSOL yield <b>${y.toFixed(2)}%</b></div>`+
+    `<div>Subsidy rate <b>${(sr*100).toFixed(sr<0.1?1:0)}%</b></div>`+
+    `<div>${y>=5.22?'<span class="flag ok">0/0 ceiling cleared</span>':(y>5.20?'<span class="flag warn">at the ceiling</span>':'<span class="flag risk">below the 0/0 ceiling (5.20%)</span>')}</div>`;
+  id("p_scrub").value=Math.round(ROLL.t/horizonCycles()*1000);
+}
+function chartEcon(){
+  const W=1060,H=320,mL=66,mR=76,mT=16,mB=54,s=svgOpen(W,H);
+  const Tn=horizonCycles(), tMax=Tn+0.4;
+  const X=t=>mL+(t/tMax)*(W-mL-mR);
+  // left axis: delegation held by validators (SOL)
+  const dLo=TOTAL_DELEG*(1-Math.max(P.move,0.3))*0.97, dHi=TOTAL_DELEG*1.01;
+  const YL=v=>H-mB-((v-dLo)/(dHi-dLo))*(H-mT-mB);
+  // right axis: total validator revenue $/mo
+  const rev=t=>P.pool*P.pf*subsidyRateAt(t)+TOTAL_DELEG*(1-movedAt(t))*delegRate();
+  const rHi=rev(0)*1.06, rLo=0;
+  const YR=v=>H-mB-((v-rLo)/(rHi-rLo))*(H-mT-mB);
+  for(let g=0;g<=4;g++){const yy=mT+(H-mT-mB)*g/4;line(s,mL,yy,W-mR,yy,"gridline");
+    txt(s,mL-6,yy+3,fmK(dLo+(dHi-dLo)*(1-g/4)),"end","fill:#5b8cff");
+    txt(s,W-mR+6,yy+3,"$"+Math.round((rLo+(rHi-rLo)*(1-g/4))/1000)+"k","start","fill:#ffb454");}
+  line(s,mL,mT,mL,H-mB,"axis");line(s,W-mR,mT,W-mR,H-mB,"axis");line(s,mL,H-mB,W-mR,H-mB,"axis");
+  // x ticks: cycles / epochs / dates, ~7 marks
+  const step=Math.max(1,Math.ceil(Tn/7));
+  for(let c=0;c<=Tn+1e-9;c+=step){
+    const x=X(c); line(s,x,H-mB,x,H-mB+4,"axis");
+    txt(s,x,H-mB+15,c===0?"start":"C"+c);
+    txt(s,x,H-mB+28,"ep "+(EPOCH0+c*10),"middle","fill:#5f6b85");
+    txt(s,x,H-mB+41,dateAt(c),"middle","fill:#5f6b85");
+  }
+  // milestones: move complete & decay start
+  const mc=P.move/0.075, ds=P.flatQ*4.4;
+  if(mc>0&&mc<=Tn){line(s,X(mc),mT,X(mc),H-mB,"","stroke:#5b8cff;stroke-width:1;stroke-dasharray:3 4;opacity:.6");
+    txt(s,X(mc),mT+10,"move complete","middle","fill:#5b8cff");}
+  if(ds>0&&ds<=Tn){line(s,X(ds),mT,X(ds),H-mB,"","stroke:#ffb454;stroke-width:1;stroke-dasharray:3 4;opacity:.6");
+    txt(s,X(ds),mT+22,"decay starts (E₀)","middle","fill:#ffb454");}
+  // full paths (dim) then progress (bright)
+  const mk=(tEnd,stD,stR)=>{
+    let d1="",d2="";const steps=240;
+    for(let i=0;i<=steps;i++){const t=tEnd*i/steps;
+      d1+=(i?"L":"M")+X(t).toFixed(1)+" "+YL(TOTAL_DELEG*(1-movedAt(t))).toFixed(1)+" ";
+      d2+=(i?"L":"M")+X(t).toFixed(1)+" "+YR(rev(t)).toFixed(1)+" ";}
+    path(s,d1,stD); path(s,d2,stR);
+  };
+  mk(tMax,"stroke:#2b3a5e;stroke-width:2","stroke:#4a3517;stroke-width:2");
+  if(ROLL.t>0) mk(Math.min(ROLL.t,tMax),"stroke:#5b8cff;stroke-width:2.6","stroke:#ffb454;stroke-width:2.6");
+  // marker
+  const tm=Math.min(ROLL.t,tMax);
+  line(s,X(tm),mT,X(tm),H-mB,"","stroke:#e6e9ef;stroke-width:1;opacity:.35");
+  circ(s,X(tm),YL(TOTAL_DELEG*(1-movedAt(tm))),5,"fill:#5b8cff;stroke:#0b0e14;stroke-width:2");
+  circ(s,X(tm),YR(rev(tm)),5,"fill:#ffb454;stroke:#0b0e14;stroke-width:2");
+  id("chart_econ").innerHTML=svgClose(s);
+}
+function updPlayBtn(){id("btnPlay").innerHTML=ROLL.playing?"&#10074;&#10074; Pause":"&#9654; Play rollout";}
+function tickRoll(ts){
+  if(!ROLL.playing)return;
+  const dt=Math.min((ts-ROLL.last)/1000,0.1); ROLL.last=ts;
+  const sp=ROLL.t<rollCycles()?ROLL.speed:2.2;   // speed up through the long wind-down tail
+  ROLL.t=Math.min(ROLL.t+dt*sp,horizonCycles());
+  chartRoll(); chartEcon();
+  if(ROLL.t>=horizonCycles()){ROLL.playing=false;updPlayBtn();}
+  else requestAnimationFrame(tickRoll);
+}
+id("btnPlay").onclick=()=>{
+  if(ROLL.playing){ROLL.playing=false;updPlayBtn();return;}
+  if(ROLL.t>=horizonCycles())ROLL.t=0;
+  ROLL.playing=true;ROLL.last=performance.now();updPlayBtn();requestAnimationFrame(tickRoll);
+};
+id("btnReset").onclick=()=>{ROLL.playing=false;ROLL.t=0;updPlayBtn();chartRoll();chartEcon();};
+id("p_scrub").addEventListener("input",()=>{ROLL.playing=false;updPlayBtn();ROLL.t=+id("p_scrub").value/1000*horizonCycles();chartRoll();chartEcon();});
+
+activePreset="memo"; readParams(); setCap("share"); render();
+</script>
+</body>
+</html>
