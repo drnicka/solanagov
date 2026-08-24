@@ -211,6 +211,106 @@
   footer.prov a { color: var(--ink-dim); }
   footer.prov .links { margin-top: 18px; }
   footer.prov .links a { margin-right: 26px; color: var(--ink); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  /* ---------- the vote (validator votes + staker overrides) ---------- */
+  :root { --yea: #3ADFB2; --nay: #E5675C; --abst: #C9A227; }
+  html.light { --yea: #0B8F72; --nay: #B23A2E; --abst: #9A7B10; }
+  .vote { padding: 64px 0 20px; }
+  .vote .rule-orn { color: var(--ink-faint); letter-spacing: 1.4em; padding-left: 1.4em; text-align: center; margin-bottom: 40px; }
+  .vote h2 {
+    font-variant: small-caps; font-weight: 400; letter-spacing: .2em;
+    font-size: 24px; color: var(--ink-strong); margin: 0 0 22px; text-align: center;
+  }
+  .vote .decl { font-style: italic; font-size: 17px; line-height: 1.85; color: var(--ink); max-width: 560px; margin: 0 auto; text-align: center; }
+  .vote .updated {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-faint); text-align: center; margin: 18px 0 34px;
+  }
+
+  /* quorum lead bar — shares the .prop / .bar result-bar styling below */
+  .prop.qlead { border-top: none; padding-top: 0; }
+  .prop.qlead .qtitle { font-variant: small-caps; letter-spacing: .14em; font-size: 22px; color: var(--ink-strong); }
+  .prop.qlead .bar { height: 11px; border: 1px solid var(--ink); }  /* white outline shows the remaining stake */
+  .prop.qlead .bar i { transition: width .5s ease; }
+  @media (prefers-reduced-motion: reduce) { .prop.qlead .bar i { transition: none; } }
+  .prop.qlead .legend { justify-content: space-between; }
+  .prop.qlead .countdown { color: var(--ink); }
+  .prop.qlead .countdown.soon { color: var(--live); }
+
+  /* staker participation — headline stats */
+  .ovr-stats { display: flex; gap: 52px; flex-wrap: wrap; justify-content: center; margin: 4px 0 22px; }
+  .ovr-stats .stat { text-align: center; }
+  .ovr-stats .stat .v {
+    display: block; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 32px; color: var(--ink-strong); font-variant-numeric: tabular-nums; letter-spacing: -.01em; line-height: 1.1;
+  }
+  .ovr-stats .stat .k {
+    display: block; font-variant: small-caps; letter-spacing: .1em; font-size: 13px;
+    color: var(--ink-dim); margin-top: 6px;
+  }
+
+  /* per-proposal summary */
+  .prop { border-top: 1px solid var(--rule); padding: 20px 0; }
+  .prop:last-of-type { border-bottom: 1px solid var(--rule); }
+  .prop .head { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+  .prop .code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11px; letter-spacing: .16em; color: var(--ink-dim); }
+  .prop .nm { font-size: 20px; color: var(--ink-strong); }
+  .prop .state { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--live); white-space: nowrap; }
+  .prop .bar { display: flex; height: 9px; border-radius: 3px; overflow: hidden; margin: 14px 0 9px; background: var(--pre-bg); }
+  .prop .bar i { display: block; height: 100%; }
+  .prop .bar .s-yea { background: var(--yea); } .prop .bar .s-nay { background: var(--nay); } .prop .bar .s-abst { background: var(--abst); }
+  .prop .legend {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11.5px;
+    color: var(--ink-dim); display: flex; gap: 20px; flex-wrap: wrap; letter-spacing: .02em;
+  }
+  .prop .legend b { color: var(--ink-strong); font-weight: 600; }
+  .prop .legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 2px; margin-right: 6px; vertical-align: 0; }
+
+  /* validator roll-call matrix */
+  .roll { margin: 44px 0 0; }
+  .roll h3, .ovr h3 {
+    font-variant: small-caps; font-weight: 400; letter-spacing: .16em;
+    font-size: 17px; color: var(--ink-strong); text-align: center; margin: 0 0 6px;
+  }
+  .roll .cap, .ovr .cap { font-size: 13px; color: var(--ink-dim); text-align: center; margin: 0 0 20px; font-style: italic; }
+  .scrollx { overflow-x: auto; }
+  table.matrix { width: 100%; border-collapse: collapse; font-size: 14px; }
+  table.matrix th {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10px;
+    letter-spacing: .08em; text-transform: uppercase; color: var(--ink-dim); font-weight: 400;
+    padding: 9px 6px; border-bottom: 1px solid var(--rule-strong); text-align: center; white-space: nowrap;
+  }
+  table.matrix th.who { text-align: left; }
+  table.matrix td { padding: 9px 6px; border-bottom: 1px solid var(--rule); text-align: center; }
+  table.matrix td.who { text-align: left; min-width: 0; }
+  table.matrix td.who .nm2 { color: var(--ink-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px; display: inline-block; vertical-align: bottom; }
+  table.matrix td.who .pk { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10px; color: var(--ink-faint); }
+  table.matrix td.stk { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--ink-dim); text-align: right; white-space: nowrap; }
+  .mark { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-weight: 700; font-size: 15px; }
+  .mark.for { color: var(--yea); } .mark.against { color: var(--nay); } .mark.abstain { color: var(--abst); }
+  .mark.none { color: var(--ink-faint); font-weight: 400; }
+  .rollmore { display: block; margin: 20px auto 0; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-dim);
+    background: transparent; border: 1px solid var(--rule-strong); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+  .rollmore:hover { color: var(--ink-strong); }
+
+  /* staker overrides */
+  .ovr { margin: 52px 0 0; }
+  .ovr .orow {
+    display: flex; align-items: baseline; gap: 12px; padding: 11px 2px; border-bottom: 1px solid var(--rule);
+    font-size: 14px; flex-wrap: wrap;
+  }
+  .ovr .orow.diss { border-left: 2px solid var(--nay); padding-left: 12px; margin-left: -14px; background: linear-gradient(90deg, rgba(229,103,92,.06), transparent 60%); }
+  .ovr .who3 { color: var(--ink-strong); }
+  .ovr .pk { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10.5px; color: var(--ink-faint); }
+  .ovr .amt { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; color: var(--ink-dim); margin-left: auto; white-space: nowrap; }
+  .ovr .badge { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 9.5px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule-strong); color: var(--ink-dim); }
+  .ovr .badge.diss { color: var(--nay); border-color: var(--nay); }
+  .ovr .badge.for { color: var(--yea); border-color: color-mix(in srgb, var(--yea) 55%, transparent); }
+  .ovr .badge.against { color: var(--nay); border-color: color-mix(in srgb, var(--nay) 55%, transparent); }
+  .ovr .badge.abstain { color: var(--abst); border-color: color-mix(in srgb, var(--abst) 55%, transparent); }
+  .ovr .ovrnote { text-align: center; font-size: 13px; color: var(--ink-dim); font-style: italic; margin: 22px 0 0; }
+  .vote .loaderr { text-align: center; color: var(--ink-dim); font-size: 14px; font-style: italic; padding: 20px 0; }
 </style>
 
 <button class="theme-toggle" id="theme-toggle" aria-label="Switch color theme">☼ Paper</button>
@@ -318,6 +418,39 @@
     <div class="sigs" id="sigs"></div>
     <p class="ledger-note" id="ledger-note">The ledger awaits the proposal's creation on-chain.</p>
   </div>
+
+  <!-- ============ THE VOTE ============ -->
+  <section class="vote" id="vote">
+    <div class="rule-orn">✦ ✦ ✦</div>
+    <h2>The Vote</h2>
+    <p class="decl">Sponsorship carried the proposals to a vote of all staked SOL. Here every validator's
+      ballot is recorded — for, against, or abstaining — alongside the stakers who exercised their right
+      to override their validator and vote their own stake directly.</p>
+    <div class="updated" id="vote-updated">reading the ledger…</div>
+
+    <div id="vote-quorum"></div>
+
+    <div id="vote-props"></div>
+
+    <div class="roll" id="vote-roll" hidden>
+      <h3>The Roll of Validators</h3>
+      <p class="cap">How each validator voted across the three proposals — by active stake.</p>
+      <div class="scrollx"><table class="matrix" id="vote-matrix"></table></div>
+      <button class="rollmore" id="roll-more" hidden></button>
+    </div>
+
+    <div class="ovr" id="vote-ovr" hidden>
+      <h3>Staker Participation</h3>
+      <div class="ovr-stats">
+        <div class="stat"><span class="v" id="ovr-count">—</span><span class="k">stakers voted by override</span></div>
+        <div class="stat"><span class="v" id="ovr-sol">—</span><span class="k">SOL reclaimed from validators</span></div>
+      </div>
+      <p class="cap">A staker may reclaim their share of the vote from their validator and cast it directly.
+        Those who voted <em>against their validator's own choice</em> are marked in red.</p>
+      <div id="vote-overrides"></div>
+      <p class="ovrnote" id="ovr-note"></p>
+    </div>
+  </section>
 
   <div class="howto">
     <h3>To Sign — Validators</h3>
@@ -499,6 +632,182 @@ svmgov -k /path/to/validator-identity.json \
   renderEmpty("The ledger awaits the proposal's creation on-chain.");
   loadBaseline();
   setInterval(loadBaseline, 60_000);
+})();
+</script>
+<!-- ============ THE VOTE — validator ballots + staker overrides ============ -->
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const fmtSOL = n => Math.round(n).toLocaleString("en-US");
+  const short = k => k ? k.slice(0, 4) + "…" + k.slice(-4) : "";
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const MARK = { for: "✓", against: "✗", abstain: "◦", split: "≈", none: "·" };
+  const DIRWORD = { for: "for", against: "against", abstain: "abstain", split: "split", none: "—" };
+
+  let DATA = null;
+  const ROLL_CAP = 40;
+  let rollExpanded = false;
+
+  // ---- time until the vote window closes (counts down from the baked deadline) ----
+  function countdown() {
+    const ts = DATA.voteClosesTs ? new Date(DATA.voteClosesTs).getTime() : 0;
+    if (!ts) return { text: "", soon: false };
+    const ms = ts - Date.now();
+    if (ms <= 0) return { text: "Voting closed", soon: false };
+    const d = Math.floor(ms / 864e5), h = Math.floor(ms % 864e5 / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+    const left = d > 0 ? `${d}d ${h}h` : h > 0 ? `${h}h ${m}m` : `${m}m`;
+    return { text: `Closes in ~${left}`, soon: ms < 864e5 };
+  }
+
+  // ---- quorum lead bar (SGP-1): participating stake vs 1/3 of network stake ----
+  function renderQuorumBar() {
+    if (!DATA) return;
+    const net = (DATA.networkStakeLamports || 0) / 1e9;
+    const qf = DATA.quorumFraction || 1 / 3;
+    const quorum = net * qf;
+    const p = DATA.proposals.find(x => x.code === "SGP-1") || DATA.proposals[0];
+    if (!quorum || !p) { $("vote-quorum").innerHTML = ""; return; }
+    const part = (p.forLamports + p.againstLamports + p.abstainLamports) / 1e9;
+    const pct = part / quorum * 100;
+    const met = part >= quorum;
+    const w = Math.max(0, Math.min(100, pct));
+    const cd = countdown();
+    $("vote-quorum").innerHTML = `<div class="prop qlead">
+      <div class="head">
+        <span class="qtitle">Quorum</span>
+        <span class="state">${met ? "✓ QUORUM MET" : pct.toFixed(1) + "% OF QUORUM"}</span>
+      </div>
+      <div class="bar" role="img" aria-label="${pct.toFixed(1)}% of quorum"><i class="s-yea" style="width:${w}%"></i></div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--yea)"></span><b>${fmtSOL(part)}</b> of <b>${fmtSOL(quorum)}</b> SOL · ⅓ of network stake</span>
+        ${cd.text ? `<span class="countdown${cd.soon ? " soon" : ""}">${cd.text}</span>` : ""}
+      </div>
+    </div>`;
+  }
+
+  // ---- proposal summaries ----
+  function renderProps() {
+    $("vote-props").innerHTML = DATA.proposals.map(p => {
+      const f = p.forLamports / 1e9, a = p.againstLamports / 1e9, ab = p.abstainLamports / 1e9;
+      const tot = f + a + ab || 1;
+      const pc = x => (x / tot * 100).toFixed(1) + "%";
+      const state = p.finalized ? "FINALIZED" : p.voting ? "VOTING OPEN" : "PENDING";
+      return `<div class="prop">
+        <div class="head">
+          <div><span class="code">${esc(p.code)}</span> &nbsp;<span class="nm">${esc(p.name)}</span></div>
+          <span class="state">${state}</span>
+        </div>
+        <div class="bar" role="img" aria-label="For ${pc(f)}, against ${pc(a)}, abstain ${pc(ab)}">
+          <i class="s-yea" style="width:${pc(f)}"></i><i class="s-nay" style="width:${pc(a)}"></i><i class="s-abst" style="width:${pc(ab)}"></i>
+        </div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--yea)"></span>For <b>${fmtSOL(f)}</b> SOL</span>
+          <span><span class="dot" style="background:var(--nay)"></span>Against <b>${fmtSOL(a)}</b></span>
+          <span><span class="dot" style="background:var(--abst)"></span>Abstain <b>${fmtSOL(ab)}</b></span>
+          <span>${p.validators.length} validators · ${p.overrideCount} overrides</span>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // ---- validator roll-call matrix (union across proposals, keyed by identity) ----
+  function renderMatrix() {
+    const codes = DATA.proposals.map(p => p.code);
+    const rows = {};
+    DATA.proposals.forEach(p => p.validators.forEach(v => {
+      const r = rows[v.identity] || (rows[v.identity] = { name: v.name, id: v.identity, vote: v.voteAccount, stake: 0, dirs: {} });
+      r.dirs[p.code] = v.dir;
+      if (v.name && !r.name) r.name = v.name;
+      if (v.stake > r.stake) r.stake = v.stake;
+    }));
+    const list = Object.values(rows).sort((x, y) => y.stake - x.stake);
+    const shown = rollExpanded ? list : list.slice(0, ROLL_CAP);
+
+    let h = `<tr><th class="who">Validator</th><th class="stk">Active stake</th>${codes.map(c => `<th>${esc(c)}</th>`).join("")}</tr>`;
+    h += shown.map(r => {
+      const label = r.name ? esc(r.name) : short(r.vote || r.id);
+      const cells = codes.map(c => {
+        const d = r.dirs[c] || "none";
+        return `<td><span class="mark ${d}" title="${DIRWORD[d]}">${MARK[d]}</span></td>`;
+      }).join("");
+      return `<tr><td class="who"><span class="nm2">${label}</span><br><span class="pk">${short(r.vote || r.id)}</span></td>
+        <td class="stk">${r.stake ? fmtSOL(r.stake) + " SOL" : "—"}</td>${cells}</tr>`;
+    }).join("");
+    $("vote-matrix").innerHTML = h;
+
+    const more = $("roll-more");
+    if (list.length > ROLL_CAP) {
+      more.hidden = false;
+      more.textContent = rollExpanded ? "Show fewer" : `Show all ${list.length} validators`;
+    } else more.hidden = true;
+    $("vote-roll").hidden = false;
+  }
+
+  // ---- staker participation: dissenters first & highlighted, then largest ----
+  function renderOverrides() {
+    const all = [];
+    DATA.proposals.forEach(p => p.overrides.forEach(o => all.push({ ...o, code: p.code })));
+    // headline stats: unique stakers, and unique SOL (dedup by stake account, since the
+    // same stake account voting on all three ballots is the same underlying stake).
+    const stakerSet = new Set(), byStakeAcct = new Map();
+    all.forEach(o => { stakerSet.add(o.delegator); if (!byStakeAcct.has(o.stakeAccount)) byStakeAcct.set(o.stakeAccount, o.amount); });
+    const uniqueSOL = [...byStakeAcct.values()].reduce((s, a) => s + a, 0);
+    $("ovr-count").textContent = stakerSet.size.toLocaleString("en-US");
+    $("ovr-sol").textContent = fmtSOL(uniqueSOL);
+
+    const dissent = all.filter(o => o.dissent).sort((a, b) => b.amount - a.amount);
+    const rest = all.filter(o => !o.dissent).sort((a, b) => b.amount - a.amount);
+    const CAP = 25;
+    const show = [...dissent, ...rest.slice(0, Math.max(0, CAP - dissent.length))];
+
+    const rowHTML = o => {
+      const val = o.validatorName ? esc(o.validatorName) : short(o.voteAccount);
+      const dbadge = o.dissent
+        ? `<span class="badge diss">voted ${DIRWORD[o.dir]} · validator ${DIRWORD[o.validatorDir]}</span>`
+        : `<span class="badge ${o.dir}">${DIRWORD[o.dir]}</span>`;
+      return `<div class="orow${o.dissent ? " diss" : ""}">
+        <span class="who3">${short(o.delegator)}</span>
+        <span class="pk">overrode ${val} · ${esc(o.code)}</span>
+        ${dbadge}
+        <span class="amt">${o.amount.toLocaleString("en-US")} SOL</span>
+      </div>`;
+    };
+    $("vote-overrides").innerHTML = show.map(rowHTML).join("");
+    $("ovr-note").textContent =
+      `${all.length} override actions across the three ballots` +
+      (dissent.length ? ` — ${dissent.length} diverged from their validator's own choice.` : ` — none diverged from their validator.`) +
+      (show.length < all.length ? ` Showing the ${show.length} largest, plus every dissenter.` : "");
+    $("vote-ovr").hidden = false;
+  }
+
+  function renderAll() { renderQuorumBar(); renderProps(); renderMatrix(); renderOverrides(); }
+
+  $("roll-more").addEventListener("click", () => { rollExpanded = !rollExpanded; renderMatrix(); });
+
+  function stamp() {
+    if (!DATA) return;
+    const t = new Date(DATA.generatedAt);
+    const when = t.toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+    $("vote-updated").textContent = "UPDATED " + when.toUpperCase() + " · EPOCH " + DATA.epoch;
+  }
+
+  // Same model as the ledger: read a same-origin file baked server-side by the
+  // deploy Action every ~10 min — no per-visitor RPC (which the public endpoint
+  // rate-limits). Re-fetching the static file is cheap and reliable; the countdown
+  // ticks client-side between fetches.
+  async function load() {
+    try {
+      const next = await (await fetch("/data/votes.json?t=" + Date.now(), { cache: "no-store" })).json();
+      DATA = next;
+    } catch (e) {
+      if (!DATA) { $("vote-updated").textContent = "The vote ledger will appear here once the first ballots are recorded."; }
+      return;
+    }
+    renderAll(); stamp();
+  }
+  load();
+  setInterval(load, 60_000);                 // pick up fresh bakes
+  setInterval(renderQuorumBar, 60_000);      // keep the countdown live between bakes
 })();
 </script>
 </html>
