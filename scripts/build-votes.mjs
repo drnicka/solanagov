@@ -196,12 +196,28 @@ async function main() {
   }
 
   // Vote window closes at the start of SGP-1's end_epoch (cast_vote requires
-  // current_epoch < end_epoch). Estimate the deadline from epoch progress so the
-  // page can count down live; ~420ms/slot gives ~2.09-day epochs.
+  // current_epoch < end_epoch). Anchor the deadline to real chain time and the
+  // MEASURED slot cadence rather than a fixed constant, so it self-corrects across
+  // slot-time changes — SIMD-0525 cut the target 400ms->350ms at epoch 1020
+  // (measured ~364ms), with further cuts to 300/250/200ms planned.
   const lead = proposals.find(p => p.code === "SGP-1") || proposals[0];
-  const SLOT_MS = 420;
-  const slotsToClose = (lead.endEpoch - epochInfo.epoch) * epochInfo.slotsInEpoch - epochInfo.slotIndex;
-  const voteClosesTs = new Date(Date.now() + Math.max(0, slotsToClose) * SLOT_MS).toISOString();
+  const firstSlotOfClose = lead.endEpoch * epochInfo.slotsInEpoch;
+  const slotsToClose = Math.max(0, firstSlotOfClose - epochInfo.absoluteSlot);
+  const blockTimeNear = async slot => {                 // skips skipped slots
+    for (let k = 0; k < 10; k++) { try { const t = await rpc("getBlockTime", [slot + k]); if (t) return { slot: slot + k, t }; } catch (e) {} }
+    return null;
+  };
+  let slotSec = 0.364, chainNow = Math.floor(Date.now() / 1000);
+  try {
+    const anchor = epochInfo.absoluteSlot - 8;         // a few slots back from the tip
+    const W = 50000;                                    // ~5h window, well after the epoch-1020 change
+    const [a, b] = [await blockTimeNear(anchor - W), await blockTimeNear(anchor)];
+    if (a && b && b.slot > a.slot) {
+      slotSec = (b.t - a.t) / (b.slot - a.slot);
+      chainNow = b.t + (epochInfo.absoluteSlot - b.slot) * slotSec;
+    }
+  } catch (e) { console.error("slot-time measure failed; using 364ms fallback:", e.message); }
+  const voteClosesTs = new Date((chainNow + slotsToClose * slotSec) * 1000).toISOString();
 
   const out = {
     generatedAt: new Date().toISOString(),
@@ -211,10 +227,11 @@ async function main() {
     quorumFraction: 1 / 3,      // Constitution IV.3: quorum = 1/3 of network stake
     voteClosesTs,               // estimated vote-window close (start of SGP-1 end_epoch)
     voteCloseEpoch: lead.endEpoch,
+    measuredSlotMs: Math.round(slotSec * 1000),
     proposals,
   };
   writeFileSync(OUT, JSON.stringify(out));
-  console.log(`votes.json written · epoch ${epochInfo.epoch} · name registry: ${Object.keys(names.byIdentity).length} identities / ${Object.keys(names.byVote).length} vote accts`);
+  console.log(`votes.json written · epoch ${epochInfo.epoch} · slot ${Math.round(slotSec * 1000)}ms · vote closes ${voteClosesTs} · name registry: ${Object.keys(names.byIdentity).length} identities / ${Object.keys(names.byVote).length} vote accts`);
   for (const p of proposals) {
     const named = p.validators.filter(v => v.name).length;
     console.log(`  ${p.code} ${p.name}: ${p.validators.length} validators (${named} named) — for ${p.counts.for||0}/against ${p.counts.against||0}/abstain ${p.counts.abstain||0}; ${p.overrideCount} overrides, ${p.dissentCount} dissenting`);
