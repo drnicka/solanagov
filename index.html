@@ -256,6 +256,15 @@
   .prop .code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11px; letter-spacing: .16em; color: var(--ink-dim); }
   .prop .nm { font-size: 20px; color: var(--ink-strong); }
   .prop .state { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--live); white-space: nowrap; }
+  .prop .tags { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; justify-content: flex-end; }
+  .passtag { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--rule-strong); white-space: nowrap; }
+  .passtag.pass { color: var(--yea); border-color: var(--yea); }
+  .passtag.fail { color: var(--nay); border-color: var(--nay); }
+  .passtag.warn { color: var(--abst); border-color: var(--abst); }
+  .prop .pct { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; color: var(--ink-dim); margin-top: 9px; letter-spacing: .01em; line-height: 1.5; }
+  .prop .pct b { font-weight: 600; }
+  .prop .pct .ok { color: var(--yea); } .prop .pct .bad { color: var(--nay); } .prop .pct .warn { color: var(--abst); }
+  .prop .pct .faint { color: var(--ink-faint); }
   .prop .bar { display: flex; height: 9px; border-radius: 3px; overflow: hidden; margin: 14px 0 9px; background: var(--pre-bg); }
   .prop .bar i { display: block; height: 100%; }
   .prop .bar .s-yea { background: var(--yea); } .prop .bar .s-nay { background: var(--nay); } .prop .bar .s-abst { background: var(--abst); }
@@ -687,15 +696,28 @@ svmgov -k /path/to/validator-identity.json \
 
   // ---- proposal summaries ----
   function renderProps() {
+    const net = (DATA.networkStakeLamports || 0) / 1e9;
+    const quorum = net * (DATA.quorumFraction || 1 / 3);
     $("vote-props").innerHTML = DATA.proposals.map(p => {
       const f = p.forLamports / 1e9, a = p.againstLamports / 1e9, ab = p.abstainLamports / 1e9;
       const tot = f + a + ab || 1;
       const pc = x => (x / tot * 100).toFixed(1) + "%";
       const state = p.finalized ? "FINALIZED" : p.voting ? "VOTING OPEN" : "PENDING";
+      // outcome: quorum = 1/3 of network stake; pass = For >= 2/3 of participating (For+Against+Abstain)
+      const part = f + a + ab;
+      const superPct = part > 0 ? f / part : 0;         // abstain counts in the denominator (Art. IV.4)
+      const superExAb = (f + a) > 0 ? f / (f + a) : 0;   // for reference — abstain excluded
+      const quorumMet = quorum > 0 && part >= quorum;
+      const superMet = superPct >= 2 / 3;
+      let passLabel, passCls;
+      if (!quorumMet) { passLabel = p.finalized ? "INCONCLUSIVE" : "NOT PASSING"; passCls = "warn"; }
+      else if (!superMet) { passLabel = p.finalized ? "REJECTED" : "NOT PASSING"; passCls = "fail"; }
+      else { passLabel = p.finalized ? "PASSED" : "PASSING"; passCls = "pass"; }
+      const qPct = quorum > 0 ? (part / quorum * 100).toFixed(0) : "—";
       return `<div class="prop">
         <div class="head">
           <div><span class="code">${esc(p.code)}</span> &nbsp;<span class="nm">${esc(p.name)}</span></div>
-          <span class="state">${state}</span>
+          <div class="tags"><span class="passtag ${passCls}">${passLabel}</span><span class="state">${state}</span></div>
         </div>
         <div class="bar" role="img" aria-label="For ${pc(f)}, against ${pc(a)}, abstain ${pc(ab)}">
           <i class="s-yea" style="width:${pc(f)}"></i><i class="s-nay" style="width:${pc(a)}"></i><i class="s-abst" style="width:${pc(ab)}"></i>
@@ -705,6 +727,11 @@ svmgov -k /path/to/validator-identity.json \
           <span><span class="dot" style="background:var(--nay)"></span>Against <b>${fmtSOL(a)}</b></span>
           <span><span class="dot" style="background:var(--abst)"></span>Abstain <b>${fmtSOL(ab)}</b></span>
           <span>${p.validators.length} validators · ${p.overrideCount} overrides</span>
+        </div>
+        <div class="pct">
+          Supermajority <b class="${superMet ? "ok" : "bad"}">${(superPct * 100).toFixed(1)}%</b> For of votes cast · needs ⅔ (66.7%)
+          <span class="faint">— ${(superExAb * 100).toFixed(1)}% excl. abstain</span>
+          &nbsp;·&nbsp; Quorum <b class="${quorumMet ? "ok" : "warn"}">${qPct}%</b> ${quorumMet ? "met ✓" : "of ⅓"}
         </div>
       </div>`;
     }).join("");
